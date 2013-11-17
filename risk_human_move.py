@@ -4,10 +4,10 @@ def DoHumanMove(self, player):
     
     # Place the new armies
     while numNewArmies > 0:
-        numNewArmies = self.placeArmies(numNewArmies)
+        numNewArmies = self.HumanPlaceArmies(numNewArmies)
 
     # Executing the attack phase
-    self.AttackOpponents(player)
+    self.HumanAttackOpponents(player)
 
 def HumanPlaceArmies(self, numNewArmies, player):
     

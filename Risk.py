@@ -35,7 +35,7 @@ class Risk:
     def DoMove(self, move):
         pass
     
-    def GetMoves(self):
+    def GetMoves(self,numArmiesToPlace, ):
         # Pick where to put armies
         # Pick a country to attack from/to
         pass
