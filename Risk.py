@@ -1,5 +1,6 @@
 import random
 import sys
+import copy
 
 class Risk:
 
@@ -31,16 +32,26 @@ class Risk:
         print "\n\n"
         print self.countries
 
+    ####################################
+    # Returns a sorted tuple of numbers between 1 and 6 inclusive
+    # Length of tuple is num_dice
+    #
+    ############################
     def rollDice(self, num_dice):
         temp = [random.randint(1,6) for x in range(num_dice)]
         temp.sort()
         return temp
 
+    #################################
+    # Makes a copy of the game state
+    #
+    # Returns countries_copy
+    #
+    ###############################
     def Clone(self):
-        
-        pass
+       return copy.deepcopy(self.countries)
     
-    def DoMove(self, move):
+    def DoMove(self, player, stage, move):
         pass
     
     ###############################################
