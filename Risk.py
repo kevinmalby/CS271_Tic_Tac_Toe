@@ -5,7 +5,7 @@ import copy
 class Risk:
 
     def __init__(self,country_file,num_players):
-        self.countries = {}  # {"North America:([South America,],{player:number_armies})
+        self.countries = {}  # {"North America:[[South America,],{player:number_armies}]}
         self.map = {} # {"North America":["Eastern United States", "Greenland"]}
         self.players = [0 for x in range(num_players)]
         self.makeMap(country_file)
@@ -25,12 +25,12 @@ class Risk:
                         line = line.split("-")
                         edges = line[1].split(',') # country- border_1, border_2 
                         self.map[cty[0]].append(line[0].strip())
-                        self.countries[line[0]] =([x.strip() for x in edges],{-1:0}) 
+                        self.countries[line[0]] =[[x.strip() for x in edges],{-1:0}] 
                 line = input.readline()
                  
-        print self.map
-        print "\n\n"
-        print self.countries
+       # print self.map
+       # print "\n\n"
+       # print self.countries
 
     ####################################
     # Returns a sorted tuple of numbers between 1 and 6 inclusive
@@ -78,12 +78,13 @@ class Risk:
                 moves.extend({c:(ct,x)} for ct in self.countries[c][0]for x in range(1,4) if x <= self.countries[c][1][player.playerNum]-1)  # can attack from all occupied countries with at least 2 armies on it
         # Fortifying
         else: 
-            ### TODO:: Fortify only adjacent countries or countries connected by path too?
             for c in player.occupiedCountries:
                 for cto in self.countries[c][0]:
                     if cto in player.occupiedCountries:
-                        moves.extend({c:(cto,x)} for x in range(1,self.countries[c][1][player.Num])
+                        moves.extend({c:(cto,x)} for x in range(1,self.countries[c][1][player.Num]))
         return moves
+
+
     def DoRandomMove(self):
        pass
 
