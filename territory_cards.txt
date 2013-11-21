@@ -1,0 +1,42 @@
+Japan-Horse
+China-Canon 
+Ukraine-Solider
+North Africa-Solider
+Congo-Canon 
+Afghanistan-Solider 
+Middle East-Canon 
+Venezuela-Horse
+Southern Europe-Solider 
+Northern Europe-Horse
+Greenland-Horse 
+Siam-Horse
+Irkustk-Canon 
+India-Horse
+Alberta-Canon 
+Egypt-Horse
+Kamchatka-Canon 
+Western Europe-Solider
+Indonesia-Solider 
+Yakutsk-Canon 
+Argentina-Solider
+Eastern Australia-Horse
+East Africa-Solider
+Western Australia-Canon 
+Madagascar-Horse
+Siberia-Solider
+Ontario-Canon 
+Central America-Solider
+Brazil-Solider
+Northwest Territory-Horse
+Peru-Horse
+South Africa-Canon 
+Western United States-Canon 
+Quebec-Canon 
+Great Britain-Solider
+Scandinavia-Solider
+Mongolia-Horse
+Ural-Solider
+Iceland-Horse
+Eastern United States-Canon 
+New Guinea-Horse
+Alaska-Canon

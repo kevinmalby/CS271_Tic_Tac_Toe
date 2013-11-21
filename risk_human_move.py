@@ -1,13 +1,44 @@
-def DoHumanMove(self, player):
-    self.playerJustMoved = player.playerNum
-    numNewArmies = player.GetNewArmies() # Within this will be code to calculate how many countries captured and if any continents captured
-    
-    # Place the new armies
-    while numNewArmies > 0:
-        numNewArmies = self.HumanPlaceArmies(numNewArmies)
+def DoHumanMove(self, player, phase):
 
-    # Executing the attack phase
-    self.HumanAttackOpponents(player)
+    finalMove = []
+
+    # Remember to add something where we update the player that just went
+
+    # If we are in the placement phase do the following
+    if phase == 1:
+        newArmiesResult = player.GetNewArmies(self)
+
+        if len(newArmiesResult) > 1:
+            numNewArmies = newArmiesResult[0]
+
+            for entry in newArmiesResult[1]:
+                finalMove.append(entry)
+
+        else:
+            numNewArmies = newArmiesResult[0]
+    
+        # Place the new armies
+        while numNewArmies > 0:
+            placingResult = self.HumanPlaceArmies(numNewArmies)
+            numNewArmies = placingResult[0]
+            finalMove.append[placingResult[1]]
+
+        return finalMove
+
+    # If we are in the attacking phase do the following
+    if phase == 2:
+
+        numCountriesPrior = len(player.occupiedCountries)
+
+        # Executing the attack phase
+        self.HumanAttackOpponents(player)
+
+        if len(player.occupiedCountries) > numCountriesPrior:
+            self.GetCard(player) # Still needs to be implemented
+
+    # If we are in the fortifying phase do the following
+    if phase == 3:
+        # Fill in fortification code
 
 def HumanPlaceArmies(self, numNewArmies, player):
     
@@ -42,12 +73,12 @@ def HumanPlaceArmies(self, numNewArmies, player):
         if armiesToPlaceNum < 1 or armiesToPlace > numNewArmies:
             moveDone = False
             print 'You must place at least 1 army in the country and no more than the number of armies you have left.'
-        currentCountry = self.countries[countrySelect]
-        currentCountry[1][0] = armiesToPlaceNum
-        player.occupiedCountries[countrySelect] = armiesToPlaceNum
 
-        # Return the updated number of armies available for placing
-        return numNewArmies - armiesToPlaceNum
+    # Setup the tuple to be returned as the result
+    # The first half contains the updated number of armies, and the second half contains the army movement dictionary
+    updatedArmies = numNewArmies - armiesToPlaceNum
+    return (updatedArmies, [countrySelect,armiesToPlaceNum])
+
 
 def HumanAttackOpponents(self, player):
     
@@ -80,6 +111,10 @@ def HumanAttackOpponents(self, player):
                 break;
         if matchFound != True:
             moveDone = False
+                matchFound = True
+                break;
+        if matchFound != True:
+            moveDone = False
             print 'That was not the name of an actual country.\n'
             continue
 
@@ -93,46 +128,48 @@ def HumanAttackOpponents(self, player):
             moveDone = False
             print 'You cannot attack your own country.\n'
             continue
-        attackedPlayer = self.countries[victim][1].keys()[1]
 
-        # Roll the Dice
-        numDice = raw_input('You have %d armies. How many dice do you want to roll? '%(player.occupiedCountries[attacker]))
-        if numDice > player.occupiedCountries[attacker]-1 or numDice < 1 or numDice > 3:
-            moveDone = False
-            print 'You cannot roll more dice than armies and one army must stay behind.'
-            continue
-        else:
-            numDefDice = raw_input( 'Victim country has %d armies. How many dice does player %d  want to roll? '%(self.countries[victim][1][attackedPlayer], attackedPlayer))
-            if numDefDice > self.countries[victim][1].values()[0] or numDefDice < 1 or numDefDice > 2:
-                moveDone = False
-                print "Invalid number of dice."
-                continue
+    return [attacker, victim]
+        # attackedPlayer = self.countries[victim][1][0]
+
+        # # Roll the Dice
+        # numDice = raw_input('You have %d armies. How many dice do you want to roll? '%(player.occupiedCountries[attacker]))
+        # if numDice > player.occupiedCountries[attacker]-1 or numDice < 1 or numDice > 3:
+        #     moveDone = False
+        #     print 'You cannot roll more dice than armies and one army must stay behind.'
+        #     continue
+        # else:
+        #     numDefDice = raw_input( 'Victim country has %d armies. How many dice does player %d  want to roll? '%(self.countries[victim][1][attackedPlayer], attackedPlayer))
+        #     if numDefDice > self.countries[victim][1].values()[0] or numDefDice < 1 or numDefDice > 2:
+        #         moveDone = False
+        #         print "Invalid number of dice."
+        #         continue
         
-        # Count up losses
-        attackerRoll = self.rollDice(numDice)
-        defenderRoll = self.rollDice(numDefDice)
-        print "Attacker rolled: %d"%(attackerRoll)
-        print "Defender rolled: %d"%(defenderRoll)
+        # # Count up losses
+        # attackerRoll = self.rollDice(numDice)
+        # defenderRoll = self.rollDice(numDefDice)
+        # print "Attacker rolled: %d"%(attackerRoll)
+        # print "Defender rolled: %d"%(defenderRoll)
         
-        for res in [x[0]-x[1] for x in zip(attackerRoll, defenderRoll)]:
-            # Attacker Loses Armies
-            if res == 0:
-                self.countries[attacker][1][player] -= 1
-                player.occupiedCountries[attacker] -= 1
-                print "Player %d loses 1 army"%(player.playerNum)
-            elif res < 0:
-                self.countries[attacker][1][player] += res
-                player.occupiedCountries[attacker] += res
-                print "Player %d loses %d armies"%(player.playerNum, res * -1)
-            # Victim loses armies
-            else:
-                self.countries[victim][1][attackedPlayer] -= res
-                player.occupiedCountries[victim] -= res
-                print "Player %d loses %d army"%(attackedPlayer, res)
+        # for res in [x[0]-x[1] for x in zip(attackerRoll, defenderRoll)]:
+        #     # Attacker Loses Armies
+        #     if res == 0:
+        #         self.countries[attacker][1][player] -= 1
+        #         player.occupiedCountries[attacker] -= 1
+        #         print "Player %d loses 1 army"%(player.playerNum)
+        #     elif res < 0:
+        #         self.countries[attacker][1][player] += res
+        #         player.occupiedCountries[attacker] += res
+        #         print "Player %d loses %d armies"%(player.playerNum, res * -1)
+        #     # Victim loses armies
+        #     else:
+        #         self.countries[victim][1][attackedPlayer] -= res
+        #         player.occupiedCountries[victim] -= res
+        #         print "Player %d loses %d army"%(attackedPlayer, res)
                                        
-            # Attack Again?
-        resue = raw_input("Do you want to attack some more? Y/N")
-        if resume == 'Y':
-            moveDone = False
+        #     # Attack Again?
+        # resume = raw_input("Do you want to attack some more? Y/N")
+        # if resume == 'Y':
+        #     moveDone = False
 
                 

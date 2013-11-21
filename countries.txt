@@ -16,9 +16,9 @@ South America:4
 Europe:7
     Great Britain-	Iceland, Scandinavia,Northern Europe, Western Europe
     Iceland-		Greenland, Great Britain, Scandinavia
-    Northern Europe-	Great Britain, Scandinavia, Southern Europe, Ukraine, Western Europe
+    Northern Europe-    Great Britain, Scandinavia, Southern Europe, Ukraine, Western Europe
     Scandinavia-     Great Britain, Iceland, Northern Europe, Ukraine 
-    Southern Europe-	Western Europe, Northern Europe, Ukraine, North Africa, Egypt, Middle East
+    Southern Europe-    Western Europe, Northern Europe, Ukraine, North Africa, Egypt, MiddleEast
     Ukraine-  Scandinavia, Northern Europe, Southern Europe, Ural, Afganistan, Middle East
     Western Europe-	  Great Britain, Northern Europe, Southern Europe, North Africa
 Africa:6
