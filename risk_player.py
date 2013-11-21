@@ -3,9 +3,10 @@ class RiskPlayer:
     def __init__(self, pn, pc):
         self.playerNum = pn
         self.playerColor = pc
-        self.occupiedCountries = {}
+        self.occupiedCountries = {} # {"country": num_armies} ????
         self.cards = {}
         self.continentsHeld = {}
+        self.numArmiesPlacing = 0
 
     def GetNewArmies(riskState):
         totalNewArmies = 0
