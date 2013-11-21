@@ -1,19 +1,15 @@
 import random
-<<<<<<< Updated upstream
 import sys
 import copy
-=======
 import sys, random
 import globalVals
 from risk_player import RiskPlayer
->>>>>>> Stashed changes
 
 class Risk:
 
     def __init__(self,country_file,card_file,num_players):
         self.countries = {}  # {"North America:([South America,],{player:number_armies})
         self.map = {} # {"North America":["Eastern United States", "Greenland"]}
-<<<<<<< Updated upstream
         self.players = [0 for x in range(num_players)]
         self.makeMap(country_file)
 
@@ -21,7 +17,6 @@ class Risk:
     # Read in the countries
     ############################
     def makeMap(self, country_file):
-=======
         self.territoryCards = {} # {"North America":"Canon"}
         self.tradeInValues = (4,6,8,10,12,15,20,25,30,35,40,45)
         self.tradeInPlaceholder = 0
@@ -29,7 +24,6 @@ class Risk:
         self.playersMove = -1
 
         # Build the map and countries structures
->>>>>>> Stashed changes
         with open(country_file, 'r') as input:
             line = input.readline()
             while line != "":
@@ -79,10 +73,18 @@ class Risk:
     def Clone(self):
        return copy.deepcopy(self.countries)
     
-<<<<<<< Updated upstream
-    def DoMove(self, player, stage, move):
-        pass
-    
+    # Function to do move, don't currently remember what it's doing
+    def DoMove(self, move, player, phase):
+        for country, armies in move:
+            updatePlayer = armies[0]
+            self.countries[country][1][updatePlayer] += armies[1]
+
+            if self.countries[country][1][updatePlayer] == 0:
+                removePlayer = self.countries[country][updatePlayer]
+                del removePlayer[removePlayer.keys()[1]]
+                del player.occupiedCountries[country]
+
+
     ###############################################
     # Returns a list of possible moves based on the state passed in
     # Params:  stage   What stage of the move to get moves for
@@ -94,19 +96,6 @@ class Risk:
     #        
     ###############################################
     def GetMoves(self, player, stage, num_armies=0):
-=======
-    def DoMove(self, move, player, phase):
-        for country, armies in move:
-            updatePlayer = armies[0]
-            self.countries[country][1][updatePlayer] += armies[1]
-
-            if self.countries[country][1][updatePlayer] == 0:
-                removePlayer = self.countries[country][updatePlayer]
-                del removePlayer[removePlayer.keys()[1]]
-                del player.occupiedCountries[country]
-        
-    def GetMoves(self, player ):
->>>>>>> Stashed changes
         moves = []
         # Placing Armies
         if stage == 1:
@@ -126,13 +115,9 @@ class Risk:
                     if cto in player.occupiedCountries:
                         moves.extend({c:(cto,x)} for x in range(1,self.countries[c][1][player.Num])
         return moves
-    def DoRandomMove(self):
-       pass
-
-    def DoHumanMove(self):
-        pass
+    
+    # Function to print state
     def __repr__(self):
-
         gameState = ''
         for continent in self.map:
             gameState += '\n' + continent + '\n'
@@ -145,6 +130,12 @@ class Risk:
 
         return gameState
         
+    def DoRandomMove(self):
+       pass
+
+    def DoHumanMove(self):
+        pass
+            
     def CheckFullBoard(self):
         pass
 
