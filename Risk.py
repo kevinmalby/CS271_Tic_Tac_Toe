@@ -12,6 +12,7 @@ class Risk:
         self.map = {} # {"North America":["Eastern United States", "Greenland"]}
         self.players = [0 for x in range(num_players)]
         self.makeMap(country_file)
+        self.makeCards(card_file)
 
     ###########################
     # Read in the countries
@@ -37,7 +38,12 @@ class Risk:
                         self.map[cty[0]].append(line[0].strip())
                         self.countries[line[0]] =([x.strip() for x in edges],[-1,0]) 
                 line = input.readline()
+        print self.map
+        print "\n\n"
+        print self.countries
 
+    # Read in the cards
+    def makeCards(self, card_file):
         # Build the territory cards structure
         with open(card_file, 'r') as input:
             line = input.readline()
@@ -50,9 +56,6 @@ class Risk:
             self.territoryCards['Wild2'] = 'wild'
 
                  
-        print self.map
-        print "\n\n"
-        print self.countries
 
     ####################################
     # Returns a sorted tuple of numbers between 1 and 6 inclusive
@@ -102,13 +105,14 @@ class Risk:
             for c in player.occupiedCountries:
                 moves.extend({c:(c,x)} for x in range(1,num_armies + 1 -15,5))  # can put in groups of 5 if num_armies > 15
                 moves.extend({c:(c,x)} for x in range(1,16) if x <= num_armies)       # place in groups of 1 if num_armies < 15
-                              
+
         # Attacking 
         elif stage == 2:
             for c in player.occupiedCountries:
                 moves.extend({c:(ct,x)} for ct in self.countries[c][0]for x in range(1,4) if x <= self.countries[c][1][player.playerNum]-1)  # can attack from all occupied countries with at least 2 armies on it
+
         # Fortifying
-        else: 
+        else:
             ### TODO:: Fortify only adjacent countries or countries connected by path too?
             for c in player.occupiedCountries:
                 for cto in self.countries[c][0]:

@@ -10,28 +10,29 @@ def main():
         print str(riskState)
         curPlayer = riskState.players[riskState.playersMove]
 
-        if riskState.playersMove == 0:
-            # First execute the placement phase
+        # if riskState.playersMove == 0:
+        #     pass
+        #     # First execute the placement phase
 
 
-            # Then execute the attacking phase
+        #     # Then execute the attacking phase
 
-            # Finally, execute the fortification phase
+        #     # Finally, execute the fortification phase
 
 
-            riskState.DoHumanMove()
-        elif riskState.playersMove == 1:
+        #     #riskState.DoHumanMove()
+        # elif riskState.playersMove == 1:
+        #     pass
+        # elif riskState.playersMove == 2:
+        #     pass
+        # elif riskState.playersMove == 3:
+        #     pass
+        # elif riskState.playersMove == 4:
+        #     pass
+        # else
+        #     pass
 
-        elif riskState.playersMove == 2:
-
-        elif riskState.playersMove == 3:
-
-        elif riskState.playersMove == 4:
-
-        else
-            riskState.playersMove == 5:
-
-        riskState.DoMove() # Execute move of form DoMove(phase, ['north america', 'alaska'])
+        #riskState.DoMove() # Execute move of form DoMove(phase, ['north america', 'alaska'])
 
 if __name__ == "__main__":
     main()
