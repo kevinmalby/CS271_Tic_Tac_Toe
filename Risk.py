@@ -13,17 +13,16 @@ class Risk:
         self.players = [0 for x in range(num_players)]
         self.makeMap(country_file)
         self.makeCards(card_file)
+        self.playersMove = -1
+        self.territoryCards = {} # {"North America":"Canon"}
+        self.tradeInValues = (4,6,8,10,12,15,20,25,30,35,40,45)
+        self.tradeInPlaceholder = 0
 
     ###########################
     # Read in the countries
     ############################
     def makeMap(self, country_file):
-        self.territoryCards = {} # {"North America":"Canon"}
-        self.tradeInValues = (4,6,8,10,12,15,20,25,30,35,40,45)
-        self.tradeInPlaceholder = 0
-        self.players = []
-        self.playersMove = -1
-
+        
         # Build the map and countries structures
         with open(country_file, 'r') as input:
             line = input.readline()
