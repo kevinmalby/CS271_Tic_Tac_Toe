@@ -101,9 +101,16 @@ class Risk:
                 player.numArmiesPlacing -= num_armies
                 if player.numArmiesPlacing == 0:
                     self.gamePhase = 2
+            elif c_info.has_key(-1):
+                c_info.clear()
+                c_info[player.playerNum] = num_armies
+                player.numArmiesPlacing -= num_armies
+                player.occupiedCountries[to_country] = num_armies
+                if player.numArmiesPlacing == 0:
+                    self.gamePhase = 2
             else:
                 print "Phase One invalid move."
-                return
+                return -1
             
         # Phase 2 - Attack from country; countries lose armies
         elif self.gamePhase == 2:
@@ -142,13 +149,14 @@ class Risk:
                             player.cards[new_card[0]] = new_card[1] # get a card
             else:
                 print "Phase Two invalid move."
-                return
+                return -1
             # change game phase if attacker can't attack anymore
             if c_info[player.playerNum] < 2:
                 self.gamePhase = 3
         # Phase 3 - Fortify; countries add/lose armies
-        else:
-            if c_info[player.playerNum] -1 > num_armies and to_country in self.countries[from_country][0] and to_country in player.occupiedCountries.getkeys():
+        elif self.gamePhase == 3:
+            #pdb.set_trace()
+            if c_info[player.playerNum] -1 > num_armies and to_country in self.countries[from_country][0] and to_country in player.occupiedCountries.keys():
                 c_info[player.playerNum] -= num_armies
                 player.occupiedCountries[from_country] -= num_armies
                 self.countries[to_country][1][player.playerNum] += num_armies
@@ -157,7 +165,7 @@ class Risk:
                 self.playersMove = (player.playerNum + 1) % globalVals.maxPlayers
             else:
                 print "Phase Three invalid move"
-                return
+                return -1
                 # error message
         return
 
