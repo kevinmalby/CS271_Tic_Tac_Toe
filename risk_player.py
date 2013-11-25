@@ -129,3 +129,5 @@ class RiskPlayer:
         return False
             
 
+    def __repr__(self):
+        return "Player %d: %d Countries %d Continents %d Cards\n"%(self.playerNum,len(self.occupiedCountries), len(self.continentsHeld), len(self.cards))

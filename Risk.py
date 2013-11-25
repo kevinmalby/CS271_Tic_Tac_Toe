@@ -4,6 +4,7 @@ import copy
 import sys, random
 import globalVals
 from risk_player import RiskPlayer
+import pdb
 
 class Risk:
 
@@ -11,16 +12,16 @@ class Risk:
         self.countries = {}  # {"North America:[[South America,],{player:number_armies}]}
         self.map = {} # {"North America":["Eastern United States", "Greenland"]}
         self.players = []
-        if country_file != "":
-            self.makeMap(country_file)
-        if card_file != "":
-            self.makeCards(card_file)
         self.playersMove = -1
         self.territoryCards = {} # {"North America":"Canon"}
         self.tradeInValues = (4,6,8,10,12,15,20,25,30,35,40,45)
         self.tradeInPlaceholder = 0
         self.gamePhase = 1
-
+        if country_file != "":
+            self.makeMap(country_file)
+        if card_file != "":
+            self.makeCards(card_file)
+      
     ###########################
     # Read in the countries
     ############################
@@ -37,7 +38,7 @@ class Risk:
                             line = line.split("-")
                             edges = line[1].split(',') # country- border_1, border_2 
                             self.map[cty[0]].append(line[0].strip())
-                        self.countries[line[0]] =[[x.strip() for x in edges],{-1:0}] 
+                            self.countries[line[0]] =[[x.strip() for x in edges],{-1:0}] 
                     line = input.readline()
 
     # Read in the cards
@@ -52,7 +53,6 @@ class Risk:
                     line = input.readline()
                     self.territoryCards['Wild1'] = 'wild'
                     self.territoryCards['Wild2'] = 'wild'
-
     ####################################
     # Returns a sorted tuple of numbers between 1 and 6 inclusive
     # Length of tuple is num_dice
@@ -75,23 +75,23 @@ class Risk:
         new_board.players = copy.deepcopy(self.players)
         new_board.map = self.map 
         new_board.playersMove = self.playersMove
-        new_board.territoryCards = self.territoryCards
+        new_board.territoryCards = copy.deepcopy(self.territoryCards)
         new_board.tradeInPlaceholder = self.tradeInPlaceholder
         new_board.gamePhase = self.gamePhase
         return new_board
     
     # Updates the game state with the move
     # params: move : {from_country: (to_country, num_armies)}
-    #         player: player doing the move
+    #         player: player OBJECT doing the move
     #         phase: which phase of the move (1,2,3)
     #
-#TODO:: all updates; update phase
-    def DoMove(self, move, player, phase):
-        from_country = move.get_keys()[0]
+    def DoMove(self, move, player):
+        from_country = move.keys()[0]
         to_country = move[from_country][0]
         num_armies = move[from_country][1]
+
         c_info = self.countries[from_country][1] # {pl_#: #_armies}
-        defendingPlayer = self.countries[to_country][1].getkeys()[0]
+        defendingPlayer = self.countries[to_country][1].keys()[0]
 
         # Phase 1 - Place armies on country
         if self.gamePhase == 1 and player.numArmiesPlacing > num_armies:
@@ -111,40 +111,40 @@ class Risk:
                 #flag to stop attacking
                 self.gamePhase = 3
                 return
-
-            if num_armies < c_info[1] - 2:
+            if num_armies <= (c_info[player.playerNum] - 2):
                 attack_dice = self.rollDice(num_armies)
-                if countries[to_country][defendingPlayer] > 1: 
+
+                if self.countries[to_country][1][defendingPlayer] > 1: 
                     defend_dice = self.rollDice(2)
                 else:
                     defend_dice = self.rollDice(1)
                  
-            for res in [x[0]-x[1] for x in zip(attack_dice, defend_dice)]:
-                # Attacker Loses Armies
-                if res == 0:
-                    c_info[player.playerNum] -= 1
-                    player.occupiedCountries[from_country] -= 1
-                elif res < 0:
-                    c_info[player.playerNum] += res
-                    player.occupiedCOuntries[from_country] += res
-             # Victim loses armies
-                else:
-                    fromc_info = self.countries[to_country][1] 
-                    fromc_info[defendingPlayer] -= res
-                    self.players[defendingPlayer].occupiedCountries[to_country] -= res
+                for res in [x[0]-x[1] for x in zip(attack_dice, defend_dice)]:
+                    # Attacker Loses Armies
+                    if res == 0 or res < 0:
+                        c_info[player.playerNum] -= 1
+                        player.occupiedCountries[from_country] -= 1
+                    # Victim loses armies
+                    else:
+                       # pdb.set_trace()
+                        fromc_info = self.countries[to_country][1] 
+                        fromc_info[defendingPlayer] -= 1
+                        self.players[defendingPlayer].occupiedCountries[to_country] -= 1
                     #country conquered
-                    if fromc_info[defendingPlayer] == 0:
-                        fromc_info.clear()
-                        fromc_info[player.PlayerNum] = num_armies # change ownership of country
-                        c_info[player.PlayerNum] -= num_armies # move armies
-                        player.occupiedCountries[to_country] = num_armies 
-                        self.players[defendingPlayer].occupiedCountries.pop(to_country) # def player doesn't have country anymore 
-                        player.cards.update(territoryCards.popitem()) # get a card
+                        if fromc_info[defendingPlayer] == 0:
+                            self.countries[to_country][1].clear()
+                            self.countries[to_country][1][player.playerNum] = num_armies # change ownership of country
+                            player.occupiedCountries[to_country] = num_armies 
+                            player.occupiedCountries[from_country] -= num_armies
+                            self.countries[from_country][1][player.playerNum] -= num_armies
+                            self.players[defendingPlayer].occupiedCountries.pop(to_country) # def player doesn't have country anymore 
+                            new_card = self.territoryCards.popitem()
+                            player.cards[new_card[0]] = new_card[1] # get a card
             else:
                 print "Phase Two invalid move."
                 return
             # change game phase if attacker can't attack anymore
-            if c_info[player.PlayerNum] < 2:
+            if c_info[player.playerNum] < 2:
                 self.gamePhase = 3
         # Phase 3 - Fortify; countries add/lose armies
         else:
@@ -154,7 +154,7 @@ class Risk:
                 self.countries[to_country][1][player.playerNum] += num_armies
                 player.occupiedCountries[to_country] += num_armies
                 self.gamePhase = 1
-                self.playersMove = (player.PlayerNum + 1) % globalVals.maxPlayers
+                self.playersMove = (player.playerNum + 1) % globalVals.maxPlayers
             else:
                 print "Phase Three invalid move"
                 return
