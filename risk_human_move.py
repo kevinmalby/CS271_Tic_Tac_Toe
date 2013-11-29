@@ -1,44 +1,26 @@
-def DoHumanMove(self, player, phase):
-
-    finalMove = []
+def DoHumanMove(self, player):
 
     # Remember to add something where we update the player that just went
 
     # If we are in the placement phase do the following
-    if phase == 1:
-        newArmiesResult = player.GetNewArmies(self)
+    if self.gamePhase == 1:
 
-        if len(newArmiesResult) > 1:
-            numNewArmies = newArmiesResult[0]
-
-            for entry in newArmiesResult[1]:
-                finalMove.append(entry)
-
-        else:
-            numNewArmies = newArmiesResult[0]
-    
-        # Place the new armies
-        while numNewArmies > 0:
-            placingResult = self.HumanPlaceArmies(numNewArmies)
-            numNewArmies = placingResult[0]
-            finalMove.append[placingResult[1]]
-
-        return finalMove
+        # Execute the placement phase
+        move = self.HumanPlaceArmies(player.numArmiesPlacing, player)
 
     # If we are in the attacking phase do the following
-    if phase == 2:
+    if self.gamePhase == 2:
 
-        numCountriesPrior = len(player.occupiedCountries)
-
-        # Executing the attack phase
-        self.HumanAttackOpponents(player)
-
-        if len(player.occupiedCountries) > numCountriesPrior:
-            self.GetCard(player) # Still needs to be implemented
+        # Execute the attack phase
+       move = self.HumanAttackOpponents(player)
 
     # If we are in the fortifying phase do the following
-    if phase == 3:
-        # Fill in fortification code
+    if self.gamePhase == 3:
+
+        # Execute the fortify phase
+        move = self.HumanFortify(player)
+
+    return move
 
 def HumanPlaceArmies(self, numNewArmies, player):
     
@@ -53,14 +35,9 @@ def HumanPlaceArmies(self, numNewArmies, player):
 
         # Select which country in which to add armies
         countrySelect = raw_input('Please type the name of the country in which you wish to place armies: ')
-        matchFound = False
-        for key in player.occupiedCountries:
-            if key == countrySelect:
-                matchFound = True
-                break;
-        if matchFound != True:
-            moveDone = False
+        if countrySelect not in player.occupiedCountries:
             print 'That was not the name of an actual country or you do not occupy that territory.\n'
+            moveDone = False
             continue
 
         # Select the number of armies to place in that country
@@ -70,14 +47,14 @@ def HumanPlaceArmies(self, numNewArmies, player):
         except:
             moveDone = False
             print 'That was not a number.\n'
+            continue
         if armiesToPlaceNum < 1 or armiesToPlace > numNewArmies:
             moveDone = False
             print 'You must place at least 1 army in the country and no more than the number of armies you have left.'
 
-    # Setup the tuple to be returned as the result
+    # Setup the dictionary to return
     # The first half contains the updated number of armies, and the second half contains the army movement dictionary
-    updatedArmies = numNewArmies - armiesToPlaceNum
-    return (updatedArmies, [countrySelect,armiesToPlaceNum])
+    return {countrySelect:(countrySelect, armiesToPlaceNum)}
 
 
 def HumanAttackOpponents(self, player):
@@ -88,34 +65,20 @@ def HumanAttackOpponents(self, player):
 
         # Select which country to attack from
         attacker = raw_input('Please type the name of the country you want to attack from: ')
-        matchFound = False
         
         # Make sure that it is a valid country
-        for key in self.countries:
-            if key == attacker:
-                matchFound = True
-                break;
-        if matchFound != True:
+        if attacker not in self.countries and attacker not in player.occupiedCountries:
+            print 'That was not the name of an actual country or it was not your own country.\n'
             moveDone = False
-            print 'That was not the name of an actual country.\n'
             continue
         
         # Select which country to attack 
         victim = raw_input('Please type the name of the country you want to attack: ')
-        matchFound = False
        
         # Make sure that it is a valid country
-        for key in self.countries:
-            if key == victim:
-                matchFound = True
-                break;
-        if matchFound != True:
-            moveDone = False
-                matchFound = True
-                break;
-        if matchFound != True:
-            moveDone = False
+        if victim not in self.countries:
             print 'That was not the name of an actual country.\n'
+            moveDone = False
             continue
 
         # Make sure that they aren't trying to attack their own country
@@ -127,49 +90,83 @@ def HumanAttackOpponents(self, player):
         if ownCountry == True:
             moveDone = False
             print 'You cannot attack your own country.\n'
+
+    opponentArmies = self.countries[victim][1]
+    opponentArmies = opponentArmies[opponentArmies.keys()[0]]
+    print('\nYou currently have %d armies in your attacking country [%s],\
+     the opponent you are attacking has %d armies in their country [%s]' %(player.occupiedCountries[attacker],\
+        attacker, opponentArmies, victim))
+
+    moveDone = False
+    while moveDone == False:
+        moveDone = True
+        attackCount = raw_input('How many armies would you like to attack with?')
+        try:
+            attackCount = int(attackCount)
+        except:
+            print 'That was not a number'
+            moveDone = False
             continue
 
-    return [attacker, victim]
-        # attackedPlayer = self.countries[victim][1][0]
+        if attackCount > player.occupiedCountries[attacker] - 1 or attackCount < 0:
+            print 'That number is outside the range of the number of armies in your country'
+            moveDone = False
 
-        # # Roll the Dice
-        # numDice = raw_input('You have %d armies. How many dice do you want to roll? '%(player.occupiedCountries[attacker]))
-        # if numDice > player.occupiedCountries[attacker]-1 or numDice < 1 or numDice > 3:
-        #     moveDone = False
-        #     print 'You cannot roll more dice than armies and one army must stay behind.'
-        #     continue
-        # else:
-        #     numDefDice = raw_input( 'Victim country has %d armies. How many dice does player %d  want to roll? '%(self.countries[victim][1][attackedPlayer], attackedPlayer))
-        #     if numDefDice > self.countries[victim][1].values()[0] or numDefDice < 1 or numDefDice > 2:
-        #         moveDone = False
-        #         print "Invalid number of dice."
-        #         continue
-        
-        # # Count up losses
-        # attackerRoll = self.rollDice(numDice)
-        # defenderRoll = self.rollDice(numDefDice)
-        # print "Attacker rolled: %d"%(attackerRoll)
-        # print "Defender rolled: %d"%(defenderRoll)
-        
-        # for res in [x[0]-x[1] for x in zip(attackerRoll, defenderRoll)]:
-        #     # Attacker Loses Armies
-        #     if res == 0:
-        #         self.countries[attacker][1][player] -= 1
-        #         player.occupiedCountries[attacker] -= 1
-        #         print "Player %d loses 1 army"%(player.playerNum)
-        #     elif res < 0:
-        #         self.countries[attacker][1][player] += res
-        #         player.occupiedCountries[attacker] += res
-        #         print "Player %d loses %d armies"%(player.playerNum, res * -1)
-        #     # Victim loses armies
-        #     else:
-        #         self.countries[victim][1][attackedPlayer] -= res
-        #         player.occupiedCountries[victim] -= res
-        #         print "Player %d loses %d army"%(attackedPlayer, res)
-                                       
-        #     # Attack Again?
-        # resume = raw_input("Do you want to attack some more? Y/N")
-        # if resume == 'Y':
-        #     moveDone = False
+    return {attacker:(victim, attackCount)}
 
-                
+    
+def HumanFortify(self, player):
+
+    moveDone = False
+    while moveDone != True:
+        moveDone = True
+
+        # Select which country to fortify from
+        fortifyFrom = raw_input('Please type the name of the country from which you want to fortify armies: ')
+        
+        # Make sure that it is a valid country
+        if fortifyFrom not in self.countries and fortifyFrom not in player.occupiedCountries:
+            print 'That was not the name of an actual country or it was not your own country.\n'
+            moveDone = False
+            continue
+
+        # Select which country to fortify to
+        fortifyTo = raw_input('Please type the name of the country to which you want to fortify armies')
+
+        # Make sure that it is a valid country
+        if fortifyTo not in self.countries and fortifyTo not in player.occupiedCountries:
+            print 'That was not the name of an actual country or it was not your own country.\n'
+            moveDone = False
+            continue
+            
+        # Make sure that the countries are adjacent
+        adjacentToFortifyFrom = self.countries[fortifyFrom][0]
+
+        matchFound = False
+        for country in adjacentToFortifyFrom:
+            if fortifyTo == country:
+                matchFound = True
+                break;
+        if matchFound == False:
+            print 'The chosen countries must be adjacent to each other'
+            moveDone = False
+
+
+    moveDone = False
+    while moveDone == False:
+        moveDone = True
+        fortifyCount = raw_input('How many armies would you like to fortify?')
+        try:
+            fortifyCount = int(fortifyCount)
+        except:
+            print 'That was not a number'
+            moveDone = False
+            continue
+
+        if fortifyCount > player.occupiedCountries[fortifyFrom] - 1 or fortifyCount < 0:
+            print 'That number is outside the range of the number of armies in your country'
+            moveDone = False
+            continue
+
+    return {fortifyFrom:(fortifyTo, fortifyCount)}
+

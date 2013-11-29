@@ -10,29 +10,31 @@ def main():
         print str(riskState)
         curPlayer = riskState.players[riskState.playersMove]
 
-        # if riskState.playersMove == 0:
-        #     pass
-        #     # First execute the placement phase
+        # Determine the continents that each player possesses
+        riskState.setContinentControl()
 
 
-        #     # Then execute the attacking phase
+        if riskState.playersMove == 0:
+            pass
 
-        #     # Finally, execute the fortification phase
+            # First determine the number of armies that the player can place
+            totalArmiesThisTurn = curPlayer.GetNewArmies(riskState)
+            curArmies = totalArmiesThisTurn
+
+            # Execute the placement phase
+            while curArmies > 0:
+                placingResult = riskState.HumanPlaceArmies(curArmies, curPlayer)
+                curArmies = placingResult[0]
+                riskState.DoMove(placingResult[1])
 
 
-        #     #riskState.DoHumanMove()
-        # elif riskState.playersMove == 1:
-        #     pass
-        # elif riskState.playersMove == 2:
-        #     pass
-        # elif riskState.playersMove == 3:
-        #     pass
-        # elif riskState.playersMove == 4:
-        #     pass
-        # else
-        #     pass
+            # Execute the attacking phase
+            
 
-        #riskState.DoMove() # Execute move of form DoMove(phase, ['north america', 'alaska'])
+            # Finally, execute the fortification phase
+
+
+            #riskState.DoHumanMove()
 
 if __name__ == "__main__":
     main()

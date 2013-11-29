@@ -1,42 +1,42 @@
 Japan-Horse
-China-Canon 
+China-Cannon 
 Ukraine-Solider
 North Africa-Solider
-Congo-Canon 
+Congo-Cannon 
 Afghanistan-Solider 
-Middle East-Canon 
+Middle East-Cannon 
 Venezuela-Horse
 Southern Europe-Solider 
 Northern Europe-Horse
 Greenland-Horse 
 Siam-Horse
-Irkustk-Canon 
+Irkustk-Cannon 
 India-Horse
-Alberta-Canon 
+Alberta-Cannon 
 Egypt-Horse
-Kamchatka-Canon 
+Kamchatka-Cannon 
 Western Europe-Solider
 Indonesia-Solider 
-Yakutsk-Canon 
+Yakutsk-Cannon 
 Argentina-Solider
 Eastern Australia-Horse
 East Africa-Solider
-Western Australia-Canon 
+Western Australia-Cannon 
 Madagascar-Horse
 Siberia-Solider
-Ontario-Canon 
+Ontario-Cannon 
 Central America-Solider
 Brazil-Solider
 Northwest Territory-Horse
 Peru-Horse
-South Africa-Canon 
-Western United States-Canon 
-Quebec-Canon 
+South Africa-Cannon 
+Western United States-Cannon 
+Quebec-Cannon 
 Great Britain-Solider
 Scandinavia-Solider
 Mongolia-Horse
 Ural-Solider
 Iceland-Horse
-Eastern United States-Canon 
+Eastern United States-Cannon 
 New Guinea-Horse
-Alaska-Canon
+Alaska-Cannon
