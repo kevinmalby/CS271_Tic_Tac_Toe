@@ -7,11 +7,15 @@ class RiskPlayer:
         self.cards = {}
         self.continentsHeld = {}
         self.numArmiesPlacing = 0
+        self.conqueredTerritory = False
 
     def GetNewArmies(self, riskState):
         totalNewArmies = 0
 
-        for key, value in self.continentsHeld:
+        print self.continentsHeld
+        for key, value in self.continentsHeld.iteritems():
+            print key
+            print value
             totalNewArmies += value
 
         if (len(self.occupiedCountries) / 3) > 3:
@@ -22,6 +26,8 @@ class RiskPlayer:
         if len(self.cards) > 5:
             print 'You must turn in at least 3 of your cards this round'
             totalNewArmies += self.UseCards(riskState)
+        elif len(self.cards) < 3:
+            print 'You currently have less than 3 cards, you will not be able to cash them in.'
         else:
             print 'Would you like to use any of your cards this round?'
 
@@ -40,10 +46,6 @@ class RiskPlayer:
     def UseCards(self, riskState):
 
         numNewArmies = 0
-
-        if len(self.cards) < 3:
-            print 'You currently have less than 3 cards, you will not be able to cash them in.'
-            return 0
 
         print 'You currently have the following cards:\n'
         cardStr = ""
@@ -138,6 +140,13 @@ class RiskPlayer:
 
         # The player chose cards that cannot be combined so return false
         return False
+
+    def LongPrint(self):
+        strRep = "Player %d: %d Countries %d Continents %d Cards\n"%(self.playerNum,len(self.occupiedCountries), len(self.continentsHeld), len(self.cards))
+        strRep += '\n'
+        for country, val in self.occupiedCountries.iteritems():
+            strRep += '%s : %d\n' %(country, val)
+        print strRep
             
 
     def __repr__(self):

@@ -29,7 +29,7 @@ New Guinea - 1133 380
 Eastern Australia - 1130 480
 Western Australia - 1085 485
 Middle East - 720 225
-Afghanistan - 800 170
+Afganistan - 800 170
 Ural - 805 100
 Siberia - 865 80
 Irkutsk - 965 120

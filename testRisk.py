@@ -28,7 +28,7 @@ def rollDiceTie(x):
 class Test:
     def setup(self):
         self.game = r.Risk("countries.txt", "territory_cards.txt", 2)
-        self.game.players.extend([RiskPlayer(0,globalVals.colors[1]), RiskPlayer(1,globalVals.colors[0])])
+        self.game.players.extend([RiskPlayer(0,globalVals.blue), RiskPlayer(1,globalVals.red)])
         self.game.players[0].occupiedCountries = {"Argentina": 10, "Brazil":15, "Peru":20,"Venezuela":5}
         self.game.players[1].occupiedCountries = {"Congo":25,"Alaska": 1, "Greenland": 16, "Central America":8, "Eastern United States":2, "North Africa":7}
         for p in self.game.players:
@@ -36,7 +36,6 @@ class Test:
                 self.game.countries[c][1].clear()
                 self.game.countries[c][1][p.playerNum] = p.occupiedCountries[c]
         
-
 
     def test_DoMove(self):
         ## Placement Tests
@@ -248,6 +247,13 @@ class Test:
         self.game.gamePhase = 3
         print self.game.DoHumanMove(playerOne)
         self.game.DrawMap()
+
+        print self.game.CheckWinAndScore(self.game.playersMove)
+
+        for country, content in self.game.countries.iteritems():
+            content[1] = {1:3}
+
+        print self.game.CheckWinAndScore(self.game.playersMove)
         
 
 def main():

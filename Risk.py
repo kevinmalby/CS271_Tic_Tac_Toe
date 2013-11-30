@@ -82,6 +82,7 @@ class Risk:
     def rollDice(self, num_dice):
         temp = [random.randint(1,6) for x in range(num_dice)]
         temp.sort()
+        temp.reverse()
         return temp
 
     #################################
@@ -115,7 +116,7 @@ class Risk:
         defendingPlayer = self.countries[to_country][1].keys()[0]
 
         # Phase 1 - Place armies on country
-        if self.gamePhase == 1 and player.numArmiesPlacing > num_armies:
+        if self.gamePhase == 1 and player.numArmiesPlacing >= num_armies:
             if c_info.has_key(player.playerNum):
                 c_info[player.playerNum] += num_armies
                 player.occupiedCountries[to_country] += num_armies
@@ -137,47 +138,106 @@ class Risk:
         elif self.gamePhase == 2:
             if num_armies == -1:
                 #flag to stop attacking
+                if player.conqueredTerritory == True:
+                    new_card = self.territoryCards.popitem()
+                    player.cards[new_card[0]] = new_card[1] # get a card
+                player.conqueredTerritory = False
                 self.gamePhase = 3
                 return
-            if num_armies <= (c_info[player.playerNum] - 2):
-                attack_dice = self.rollDice(num_armies)
-
+            if c_info[player.playerNum] > 1:
+                if num_armies > 2:
+                    attack_dice = self.rollDice(3)
+                elif num_armies > 1:
+                    attack_dice = self.rollDice(2)
+                else:
+                    attack_dice = self.rollDice(1)
+                print '\nThe attacking dice are:'
+                print attack_dice
                 if self.countries[to_country][1][defendingPlayer] > 1: 
                     defend_dice = self.rollDice(2)
+                    print '\nThe defending dice are:'
+                    print defend_dice
                 else:
                     defend_dice = self.rollDice(1)
+                    print '\nThe defending dice are:'
+                    print defend_dice
                  
-                for res in [x[0]-x[1] for x in zip(attack_dice, defend_dice)]:
-                    # Attacker Loses Armies
-                    if res == 0 or res < 0:
-                        c_info[player.playerNum] -= 1
-                        player.occupiedCountries[from_country] -= 1
-                    # Victim loses armies
+                rollSum = 0
+                if len(attack_dice) == 3 or len(attack_dice) == 2:
+                    if len(defend_dice) == 2:
+                        if attack_dice[0] > defend_dice[0]:
+                            rollSum += 1
+                        else:
+                            rollSum -= 1
+                        if attack_dice[1] > defend_dice[1]:
+                            rollSum += 1
+                        else:
+                            rollSum -= 1
                     else:
-                       # pdb.set_trace()
-                        fromc_info = self.countries[to_country][1] 
-                        fromc_info[defendingPlayer] -= 1
-                        self.players[defendingPlayer].occupiedCountries[to_country] -= 1
-                    #country conquered
-                        if fromc_info[defendingPlayer] == 0:
-                            self.countries[to_country][1].clear()
-                            self.countries[to_country][1][player.playerNum] = num_armies # change ownership of country
-                            player.occupiedCountries[to_country] = num_armies 
-                            player.occupiedCountries[from_country] -= num_armies
-                            self.countries[from_country][1][player.playerNum] -= num_armies
-                            self.players[defendingPlayer].occupiedCountries.pop(to_country) # def player doesn't have country anymore 
-                            new_card = self.territoryCards.popitem()
-                            player.cards[new_card[0]] = new_card[1] # get a card
+                        if attack_dice[0] > defend_dice[0]:
+                            rollSum += 1
+                        else:
+                            rollSum -= 1
+                else:
+                    if defend_dice[0] >=  attack_dice[0]:
+                        rollSum -= 1
+                    else:
+                        rollSum += 1
+                        
+                
+                res = rollSum
+
+                # Both players lose 1 army
+                if res == 0:
+                    c_info[player.playerNum] -= 1
+                    player.occupiedCountries[from_country] -= 1
+                    fromc_info = self.countries[to_country][1] 
+                    fromc_info[defendingPlayer] -= 1
+                    self.players[defendingPlayer].occupiedCountries[to_country] -= 1
+                    # Check if country conquered
+                    if fromc_info[defendingPlayer] == 0:
+                        self.countries[to_country][1].clear()
+                        self.countries[to_country][1][player.playerNum] = c_info[c_info.keys()[0]] - 1 # change ownership of country
+                        player.occupiedCountries[to_country] = c_info[c_info.keys()[0]] - 1 
+                        player.occupiedCountries[from_country] = 1
+                        self.countries[from_country][1][player.playerNum] = 1
+                        self.players[defendingPlayer].occupiedCountries.pop(to_country) # def player doesn't have country anymore 
+                        new_card = self.territoryCards.popitem()
+                        player.cards[new_card[0]] = new_card[1] # get a card
+                # Attacker Loses Armies
+                elif res < 0:
+                    c_info[player.playerNum] += res
+                    player.occupiedCountries[from_country] += res
+                # Victim loses armies
+                else:
+                   # pdb.set_trace()
+                    fromc_info = self.countries[to_country][1] 
+                    fromc_info[defendingPlayer] -= res
+                    self.players[defendingPlayer].occupiedCountries[to_country] -= res
+                #country conquered
+                    if fromc_info[defendingPlayer] == 0:
+                        self.countries[to_country][1].clear()
+                        self.countries[to_country][1][player.playerNum] = c_info[c_info.keys()[0]] - 1 # change ownership of country
+                        player.occupiedCountries[to_country] = c_info[c_info.keys()[0]] - 1 
+                        player.occupiedCountries[from_country] = 1
+                        self.countries[from_country][1][player.playerNum] = 1
+                        self.players[defendingPlayer].occupiedCountries.pop(to_country) # def player doesn't have country anymore 
+                        player.conqueredTerritory = True
             else:
                 print "Phase Two invalid move."
                 return -1
-            # change game phase if attacker can't attack anymore
-            if c_info[player.playerNum] < 2:
+
+            # change game phase if attacker can't attack from any country anymore
+            canAttack = False
+            for country, value in player.occupiedCountries.iteritems():
+                if value > 1:
+                    canAttack = True
+            if canAttack == False:
                 self.gamePhase = 3
         # Phase 3 - Fortify; countries add/lose armies
         elif self.gamePhase == 3:
             #pdb.set_trace()
-            if c_info[player.playerNum] -1 > num_armies and to_country in self.countries[from_country][0] and to_country in player.occupiedCountries.keys():
+            if c_info[player.playerNum] -1 >= num_armies and to_country in self.countries[from_country][0] and to_country in player.occupiedCountries.keys():
                 c_info[player.playerNum] -= num_armies
                 player.occupiedCountries[from_country] -= num_armies
                 self.countries[to_country][1][player.playerNum] += num_armies
@@ -186,6 +246,8 @@ class Risk:
                 self.playersMove = (player.playerNum + 1) % globalVals.maxPlayers
 
                 # Get the number of armies to place for the next player
+                self.setContinentControl()
+                player = self.players[self.playersMove]
                 player.numArmiesPlacing = player.GetNewArmies(self.Clone())
             else:
                 print "Phase Three invalid move"
@@ -292,6 +354,8 @@ class Risk:
 
         print 'You have %d armies left to place.\n' %(numNewArmies)
 
+        self.DrawMap()
+
         errorVal = -1
         moveDone = False
         while moveDone != True:
@@ -341,21 +405,22 @@ class Risk:
     ###################################################
     def HumanAttackOpponents(self, player):
 
-        print 'You currently have the shown number of armies in the corresponding countries:\n'
-        for key, value in player.occupiedCountries.iteritems():
-            print key + ': ' + str(value)
-        print ''
+        # print 'You currently have the shown number of armies in the corresponding countries:\n'
+        # for key, value in player.occupiedCountries.iteritems():
+        #     print key + ': ' + str(value)
+        # print ''
         
         while True:
             endAttack = raw_input('Would you like to stop attacking and move on to fortification? Enter y for yes and n for no. ')
             if endAttack == 'y':
-                return {'':('', -1)}
+                return {'Alaska':('Alaska', -1)}
                 break
             elif endAttack == 'n':
                 break
             else:
                 print 'That was not a valid input.\n'
 
+        self.DrawMap()
         errorVal = -1
         moveDone = False
         while moveDone != True:
@@ -437,7 +502,7 @@ class Risk:
         moveDone = False
         while moveDone == False:
             moveDone = True
-            attackCount = raw_input('How many armies would you like to attack with? ')
+            attackCount = raw_input('How many dice would you like to attack with? ')
             try:
                 attackCount = int(attackCount)
             except:
@@ -445,7 +510,7 @@ class Risk:
                 moveDone = False
                 continue
 
-            if attackCount not in range(1, player.occupiedCountries[attacker]):
+            if attackCount > player.occupiedCountries[attacker] - 1 or attackCount > 3 or attackCount < 1:
                 print '***That number is outside the range of the number of armies in your country.'
                 moveDone = False
 
@@ -459,10 +524,12 @@ class Risk:
     ################################################
     def HumanFortify(self, player):
 
-        print 'You currently have the shown number of armies in the corresponding countries:\n'
-        for key, value in player.occupiedCountries.iteritems():
-            print key + ': ' + str(value)
-        print ''
+        # print 'You currently have the shown number of armies in the corresponding countries:\n'
+        # for key, value in player.occupiedCountries.iteritems():
+        #     print key + ': ' + str(value)
+        # print ''
+
+        self.DrawMap()
 
         errorVal = -1
         moveDone = False
@@ -601,10 +668,9 @@ class Risk:
             # Check if player controls each of the continents
             continentCount = {'North America':0, 'South America':0, 'Europe':0, 'Australia':0, 'Asia':0, 'Africa':0}
 
-            for country in player.occupiedCountries:
-                
-                for continent in self.map:
-                    if country in continent:
+            for continent, containedCountries in self.map.iteritems():
+                for country in player.occupiedCountries:
+                    if country in containedCountries:
                         continentCount[continent] += 1
 
             if continentCount['North America'] == 9:
@@ -632,8 +698,8 @@ class Risk:
     def randomizeInitialState(self):
         armiesToPlaceEach = 40-((globalVals.maxPlayers-2)*5)
 
-        self.players.append(RiskPlayer(0, 'Red'))
-        self.players.append(RiskPlayer(1, 'Blue'))
+        self.players.append(RiskPlayer(0, globalVals.red))
+        self.players.append(RiskPlayer(1, globalVals.blue))
 
 
         numEmptyCountries = len(self.countries)
@@ -645,19 +711,20 @@ class Risk:
                     while True:
                         country = random.choice(self.countries.keys())
 
-                        if self.countries[country][1][0] == -1:
-                            self.countries[country][1][0] = self.players[i].playerNum
-                            self.countries[country][1][1]  = 1
+                        if self.countries[country][1].keys()[0] == -1:
+                            self.countries[country][1] = {self.players[i].playerNum:1}
                             self.players[i].occupiedCountries[country] = 1
                             numEmptyCountries -= 1
                             break
 
                 else:
                     country = random.choice(self.players[i].occupiedCountries.keys())
-                    self.countries[country][1][1] += 1
+                    print 
+                    self.countries[country][1][self.players[i].playerNum] += 1
                     self.players[i].occupiedCountries[country] += 1
 
             armiesToPlaceEach -= 1
+
 
     ############################################
     # Use the pygame library to make a shitty  #
@@ -677,13 +744,7 @@ class Risk:
                 armyVal = curArmies[curArmies.keys()[0]]
                 self.printText(screen, str(armyVal), 'Ariel', 20, int(self.countryLocations[country][0]), int(self.countryLocations[country][1]), color.playerColor)
 
-        pygame.display.update()    
-
-        done = False
-        while done != True:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    done = True
+        pygame.display.update()
 
     # Prints text to the screen using Pygame library
     def printText(self, screen, txtText, Textfont, Textsize , Textx, Texty, Textcolor):
