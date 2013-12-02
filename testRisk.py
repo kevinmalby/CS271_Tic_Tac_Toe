@@ -2,6 +2,12 @@ import Risk as r
 from risk_player import RiskPlayer
 from risk_comp_player import CompRiskPlayer
 import pdb
+<<<<<<< HEAD
+=======
+from unittest import TestCase as tc
+import globalVals
+import random
+>>>>>>> 48ef8412c168a3778e5bedd410c7358a2986d4ba
 
 def rollDiceWin(x):
     if x == 3:
@@ -27,15 +33,18 @@ class Test:
     def setup(self):
         """Initialize a game and some computer players"""
         self.game = r.Risk("countries.txt", "territory_cards.txt", 2)
+<<<<<<< HEAD
         self.game.players.extend([CompRiskPlayer(0,"blue"), CompRiskPlayer(1,"red")])
+=======
+        self.game.players.extend([RiskPlayer(0,globalVals.blue), RiskPlayer(1,globalVals.red)])
+>>>>>>> 48ef8412c168a3778e5bedd410c7358a2986d4ba
         self.game.players[0].occupiedCountries = {"Argentina": 10, "Brazil":15, "Peru":20,"Venezuela":5}
-        self.game.players[1].occupiedCountries = {"Congo":25,"Alaska": 1, "Greenland": 16, "Central America":8, "Eastern United States":2}
+        self.game.players[1].occupiedCountries = {"Congo":25,"Alaska": 1, "Greenland": 16, "Central America":8, "Eastern United States":2, "North Africa":7}
         for p in self.game.players:
             for c in p.occupiedCountries:
                 self.game.countries[c][1].clear()
                 self.game.countries[c][1][p.playerNum] = p.occupiedCountries[c]
         
-
 
     def test_DoMove(self):
         ## Placement Tests
@@ -203,6 +212,7 @@ class Test:
             print "Fail Fortifying: Next player didn't get armies to place"
         
         print "Done Phase Three Testing"
+<<<<<<< HEAD
 
 
     def test_CompPlayer(self):
@@ -276,6 +286,70 @@ def main():
     Test().test_CompPlayer()
 
 if "__name__" == "main":
+=======
+
+    ############################################
+    # Not even close to a proper set of tests  #
+    # Just used it to make sure everything was #
+    # working.                                 #
+    ############################################
+    def TestHumanMove(self):
+        self.setup()
+        playerOne = self.game.players[0]
+        playerTwo = self.game.players[1]
+
+
+        for i in range(0,6):
+            newCard = random.choice(self.game.territoryCards.keys())
+            playerOne.cards[newCard] = self.game.territoryCards[newCard]
+            self.game.territoryCards.pop(newCard)
+            
+            newCard = random.choice(self.game.territoryCards.keys())
+            playerTwo.cards[newCard] = self.game.territoryCards[newCard]
+            self.game.territoryCards.pop(newCard)
+            
+
+        print '\n\nPlayer One Cards:'
+        print playerOne.cards
+
+        print '\n\nPlayer Two Cards:'
+        print playerTwo.cards
+
+        # Test getting the right amount of new armies
+        print 'New armies for player one: ' + str(playerOne.GetNewArmies(self.game))
+
+        self.game.DrawMap()
+
+        playerOne.numArmiesPlacing = 25
+        playerTwo.numArmiesPlacing = 25
+        move = self.game.DoHumanMove(playerOne)
+        print move
+        print ''
+        self.game.DoMove(move, playerOne)
+        print self.game
+        print playerOne.occupiedCountries
+        print playerTwo.occupiedCountries
+        self.game.gamePhase = 2
+        print self.game.DoHumanMove(playerOne)
+        self.game.gamePhase = 3
+        print self.game.DoHumanMove(playerOne)
+        self.game.DrawMap()
+
+        print self.game.CheckWinAndScore(self.game.playersMove)
+
+        for country, content in self.game.countries.iteritems():
+            content[1] = {1:3}
+
+        print self.game.CheckWinAndScore(self.game.playersMove)
+        
+
+def main():
+    Test().test_DoMove()
+    Test().TestHumanMove()
+
+
+if __name__ == "__main__":
+>>>>>>> 48ef8412c168a3778e5bedd410c7358a2986d4ba
     main()
 
 

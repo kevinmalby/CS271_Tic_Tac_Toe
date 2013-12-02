@@ -1,16 +1,16 @@
 North America:9
-    Alaska-	 Northwest Territory, Kamchatka
-    Alberta-	 Alaska, Northwest Territory, Ontario
+    Alaska-	 Northwest Territory, Kamchatka, Alberta
+    Alberta-	 Alaska, Northwest Territory, Ontario, Western United States
     Central America-	  Western United States, Eastern United States, Venezuela
-    Eastern United States- Western United States, Ontario, Quebec
+    Eastern United States- Western United States, Ontario, Quebec, Central America
     Greenland-	   Northwest Territory, Ontario, Quebec, Iceland
     Northwest Territory-    Alaska, Alberta, Ontario, Greenland
     Ontario-   Northwest Territory, Alberta, Western United States, Eastern United States, Greenland, Quebec
     Quebec-    Greenland, Ontario, Eastern United States
-    Western United States-	  Eastern United States, Central America, Alberta
+    Western United States-	  Eastern United States, Central America, Alberta, Ontario
 South America:4
     Argentina- Brazil, Peru
-    Brazil-    North Africa, Argentina, Peru, Venezuela
+    Brazil-    North Africa, Argentina, Peru, Venezuela, Argentina
     Peru-      Argentina, Brazil, Venezuela
     Venezuela- Central America, Brazil, Peru
 Europe:7
@@ -18,15 +18,15 @@ Europe:7
     Iceland-		Greenland, Great Britain, Scandinavia
     Northern Europe-    Great Britain, Scandinavia, Southern Europe, Ukraine, Western Europe
     Scandinavia-     Great Britain, Iceland, Northern Europe, Ukraine 
-    Southern Europe-    Western Europe, Northern Europe, Ukraine, North Africa, Egypt, MiddleEast
+    Southern Europe-    Western Europe, Northern Europe, Ukraine, North Africa, Egypt, Middle East
     Ukraine-  Scandinavia, Northern Europe, Southern Europe, Ural, Afganistan, Middle East
     Western Europe-	  Great Britain, Northern Europe, Southern Europe, North Africa
 Africa:6
     Congo-	North Africa, South Africa, East Africa
-    East Africa-	Egypt, North Africa, Congo, South Africa, Madagascar, Middle East
+    East Africa-	Egypt, North Africa, Congo, South Africa, Madagascar
     Egypt-	North Africa, Southern Europe, Middle East, East Africa
     Madagascar-	East Africa, South Africa
-    North Africa-     Alberta, Southern Europe, Western Europe, Egypt, East Africa, Congo
+    North Africa-     Southern Europe, Western Europe, Egypt, East Africa, Congo, Brazil
     South Africa-     Madagascar, Congo, East Africa
 Asia:12	  
     Afghanistan-	Middle East, Ural, Ukraine, China, India
@@ -35,15 +35,15 @@ Asia:12
     Irkutsk-	Siberia, Yakutsk, Kamchatka, Mongolia
     Japan-	Kamchatka, Mongolia
     Kamchatka-	Alaska, Yakutsk, Irkutsk, Mongolia, Japan
-    Middle East-	India, Afganistan, Ukraine, Southern Europe, Egypt, East Africa
-    Mongolia-	Japan, China, Siberia, Yakutsk, Kamchatka
+    Middle East-	India, Afganistan, Ukraine, Southern Europe, Egypt
+    Mongolia-	Japan, China, Siberia, Irkutsk, Kamchatka
     Siam-	China, India, Indonesia
     Siberia-	Ural, China, Mongolia, Irkutsk, Yakutsk
     Ural-	Ukraine, Afganistan, China, Siberia
     Yakutsk-	Siberia, Kamchatka, Irkutsk
 Australia:4 
     Eastern Australia-	New Guinea, Western Australia
-    Indonesia-		Siam, New Guinea
+    Indonesia-		Siam, New Guinea, Western Australia
     New Guinea-		Eastern Australia, Indonesia, Western Australia
-    Western Australia-	Eastern Australia, New Guinea
+    Western Australia-	Eastern Australia, New Guinea, Indonesia
 

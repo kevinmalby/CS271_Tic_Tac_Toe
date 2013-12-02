@@ -4,35 +4,31 @@ def main():
     riskState = Risk('countries.txt','territory_cards.txt', 4)
 
     riskState.randomizeInitialState()
+    riskState.playersMove = 0
+    initPlayer = riskState.players[riskState.playersMove]
+    riskState.setContinentControl()
+    numA = initPlayer.GetNewArmies(riskState)
+    print numA
+    initPlayer.numArmiesPlacing = numA
     print str(riskState)
 
-    while riskState.GetMoves() != []:
+    while True:
         print str(riskState)
         curPlayer = riskState.players[riskState.playersMove]
 
-        # if riskState.playersMove == 0:
-        #     pass
-        #     # First execute the placement phase
+        # Determine the continents that each player possesses
+        #riskState.setContinentControl()
 
-
-        #     # Then execute the attacking phase
-
-        #     # Finally, execute the fortification phase
-
-
-        #     #riskState.DoHumanMove()
-        # elif riskState.playersMove == 1:
-        #     pass
-        # elif riskState.playersMove == 2:
-        #     pass
-        # elif riskState.playersMove == 3:
-        #     pass
-        # elif riskState.playersMove == 4:
-        #     pass
-        # else
-        #     pass
-
-        #riskState.DoMove() # Execute move of form DoMove(phase, ['north america', 'alaska'])
+        if riskState.playersMove == 0:
+            move = riskState.DoHumanMove(curPlayer)
+            print move
+            riskState.DoMove(move, curPlayer)
+        elif riskState.playersMove == 1:
+            move = riskState.DoHumanMove(curPlayer)
+            print move
+            riskState.DoMove(move, curPlayer)
+        else:
+            pass
 
 if __name__ == "__main__":
     main()

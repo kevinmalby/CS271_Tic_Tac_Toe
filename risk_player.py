@@ -7,18 +7,27 @@ class RiskPlayer:
         self.cards = {}
         self.continentsHeld = {}
         self.numArmiesPlacing = 0
+        self.conqueredTerritory = False
 
-    def GetNewArmies(riskState):
+    def GetNewArmies(self, riskState):
         totalNewArmies = 0
 
-        for key, value in self.continentsHeld:
+        print self.continentsHeld
+        for key, value in self.continentsHeld.iteritems():
+            print key
+            print value
             totalNewArmies += value
 
-        totalNewArmies += len(self.occupiedCountries) / 3
+        if (len(self.occupiedCountries) / 3) > 3:
+            totalNewArmies += len(self.occupiedCountries) / 3
+        else:
+            totalNewArmies += 3
 
         if len(self.cards) > 5:
             print 'You must turn in at least 3 of your cards this round'
             totalNewArmies += self.UseCards(riskState)
+        elif len(self.cards) < 3:
+            print 'You currently have less than 3 cards, you will not be able to cash them in.'
         else:
             print 'Would you like to use any of your cards this round?'
 
@@ -30,7 +39,7 @@ class RiskPlayer:
                     break
 
             if useCards == 'y':
-                totalNewArmies += self.UseCards()
+                totalNewArmies += self.UseCards(riskState)
 
         return totalNewArmies
 
@@ -42,7 +51,6 @@ class RiskPlayer:
         cardStr = ""
         for key in self.cards:
             cardStr += '|  ' + key.ljust(10) + '  |' + '  '
-
         cardStr += '\n'
         for key, value in self.cards.iteritems():
             cardStr += '|  ' + value.ljust(10) + '  |' + '  '
@@ -54,15 +62,23 @@ class RiskPlayer:
 
 
         while True:
-            cards = raw_input('Please select 3 cards you wish to use according to the \
-                values in the brackets.\nPlease enter in comma separated format.\n')
+            cards = raw_input('Please select 3 cards you wish to use according to the values in the brackets.\nPlease enter in comma separated format.\n')
 
             cards = cards.split(',')
             intCards = []
             for card in cards:
                 intCards.append(int(card.strip()))
 
-            if self.CheckCards(intCards) == True:
+            count = 0
+            cardChoiceVals = []
+            cardChoiceKeys = []
+            for country, value in self.cards.iteritems():
+                if count in intCards:
+                    cardChoiceVals.append(value)
+                    cardChoiceKeys.append(country)
+                count += 1
+
+            if self.CheckCards(cardChoiceVals) == True:
                 break
             else:
                 print 'Those were not valid cards.'
@@ -74,38 +90,37 @@ class RiskPlayer:
         riskState.tradeInPlaceholder += 1
 
 
-        extraArmiesForOwnedCountries = []
-        for card in cards:
-            for key in card:
+        print cardChoiceKeys
+        for country in cardChoiceKeys:
 
-                if key in self.occupiedCountries:
-                    extraArmiesForOwnedCountries.append([key,2])
+            if country in self.occupiedCountries:
+                curCountry = riskState.countries[country]
+                curCountry[1][self.playerNum] += 2
 
-                # Remove the card from the players hand because it has been used
-                del self.cards[key]
+            # Remove the card from the players hand because it has been used
+            del self.cards[country]
 
 
 
         # Return the final number of armies to place
-        return (numNewArmies, extraArmiesForOwnedCountries)
-
-
+        return (numNewArmies)
 
 
     def CheckCards(self, cards):
 
         # Check if all cards have the same symbol
-        if self.cards[cards[0]] == self.cards[cards[1]] == self.cards[cards[2]]:
+        if cards[0] == cards[1] == cards[2]:
+            print '\nThey were all the same!\n'
             return True 
 
         # Check if all cards are different (Will handle wild okay because it will see it as different)
         sameSymbol = False
         i = 0
         for card in cards:
-            if self.cards[card] == self.cards[(i+1) % 3]:
-                sameSymbol == True
-            if self.cards[card] == self.cards[(i+2) % 3]:
-                sameSymbol == True
+            if card == cards[(i+1) % 3]:
+                sameSymbol = True
+            if card == cards[(i+2) % 3]:
+                sameSymbol = True
             i += 1
 
         if sameSymbol == False:
@@ -115,18 +130,23 @@ class RiskPlayer:
         wildExists = False
         i = 0
         for card in cards:
-            if self.cards[card] == 'wild':
+            if card == 'wild':
                 wildExists = True
                 wildIndex = i
             i += 1
         
-        nextCard = (wildIndex + 1) % 3
-        nextNextCard = (wildIndex + 2) % 3
-        if (wildExists == True) and (self.cards[cards[nextCard]] == self.cards[cards[nextNextCard]]):
+        if wildExists == True:
             return True
 
         # The player chose cards that cannot be combined so return false
         return False
+
+    def LongPrint(self):
+        strRep = "Player %d: %d Countries %d Continents %d Cards\n"%(self.playerNum,len(self.occupiedCountries), len(self.continentsHeld), len(self.cards))
+        strRep += '\n'
+        for country, val in self.occupiedCountries.iteritems():
+            strRep += '%s : %d\n' %(country, val)
+        print strRep
             
 
     def __repr__(self):
