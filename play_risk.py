@@ -26,17 +26,7 @@ def main():
             # move = riskState.DoHumanMove(curPlayer)
             # print move
             # riskState.DoMove(move, curPlayer)
-            print '############# The state of the game before the computer moved ####################################'
-            curPlayer.LongPrint()
-            print 'The whole state is:'
-            print riskState
-            print '############# End The state of the game before the computer moved ####################################'
             riskState.DoRandomMove(curPlayer)
-            print '############# The state of the game after the computer moved ####################################'
-            curPlayer.LongPrint()
-            print 'The whole state is:'
-            print riskState
-            print '############# End The state of the game after the computer moved ####################################'
         else:
             pass
 
