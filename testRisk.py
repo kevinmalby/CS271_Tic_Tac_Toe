@@ -69,7 +69,7 @@ class Test:
         p_1_num_countries = len(p_1.occupiedCountries)
         p_2_num_countries = len(p_2.occupiedCountries)
         
-        pdb.set_trace()
+       # pdb.set_trace()
         # Attacker Wins
         self.game.rollDice = rollDiceWin
         move = {"Venezuela":("Central America", 3)}
@@ -138,6 +138,8 @@ class Test:
         p_2_num_countries = len(p_2.occupiedCountries)
         num_in_Brazil = p_1.occupiedCountries["Brazil"]
         num_in_Congo = p_2.occupiedCountries["Congo"]
+        
+        pdb.set_trace()
 
         move = {"Congo":("Brazil", 3)}
         self.game.rollDice = rollDiceWin
@@ -147,8 +149,6 @@ class Test:
             print "Failed Ownership Change; Attacker didn't gain country"
         if len(p_1.occupiedCountries) != (p_1_num_countries-1):
             print "Failed Ownership Change; Defender didn't lose country"
-        if len(p_2.cards) != 1:
-            print "Failed Ownership Change; Attacker didn't get a card"
         if "Brazil" in p_1.occupiedCountries:
             print "Failed Ownership Change: Defender still has control of country"
         if not ("Brazil" in p_2.occupiedCountries):

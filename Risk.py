@@ -196,14 +196,10 @@ class Risk:
                     self.players[defendingPlayer].occupiedCountries[to_country] -= 1
                     # Check if country conquered
                     if fromc_info[defendingPlayer] == 0:
-                        self.countries[to_country][1].clear()
-                        self.countries[to_country][1][player.playerNum] = c_info[c_info.keys()[0]] - 1 # change ownership of country
-                        player.occupiedCountries[to_country] = c_info[c_info.keys()[0]] - 1 
-                        player.occupiedCountries[from_country] = 1
-                        self.countries[from_country][1][player.playerNum] = 1
-                        self.players[defendingPlayer].occupiedCountries.pop(to_country) # def player doesn't have country anymore 
-                        new_card = self.territoryCards.popitem()
-                        player.cards[new_card[0]] = new_card[1] # get a card
+                        player.conqueredTerritory = True
+                        self.gamePhase = 4
+                        player.numArmiesPlacing = player.occupiedCountries[from_country] # num armies that can be moved +1 (since using range() in GetMoves()
+                        player.occupiedCountries[from_country] = 0 # set as flag as the attacking country
                 # Attacker Loses Armies
                 elif res < 0:
                     c_info[player.playerNum] += res
@@ -216,13 +212,11 @@ class Risk:
                     self.players[defendingPlayer].occupiedCountries[to_country] -= res
                 #country conquered
                     if fromc_info[defendingPlayer] == 0:
-                        self.countries[to_country][1].clear()
-                        self.countries[to_country][1][player.playerNum] = c_info[c_info.keys()[0]] - 1 # change ownership of country
-                        player.occupiedCountries[to_country] = c_info[c_info.keys()[0]] - 1 
-                        player.occupiedCountries[from_country] = 1
-                        self.countries[from_country][1][player.playerNum] = 1
-                        self.players[defendingPlayer].occupiedCountries.pop(to_country) # def player doesn't have country anymore 
                         player.conqueredTerritory = True
+                        self.gamePhase = 4
+                        player.numArmiesPlacing = player.occupiedCountries[from_country] # num armies that can be moved +1 (since using range() in GetMoves()
+                        player.occupiedCountries[from_country] = 0 # set as flag as the attacking country
+                    
             else:
                 print "Phase Two invalid move."
                 return -1
@@ -254,12 +248,28 @@ class Risk:
             else:
                 print "Phase Three invalid move"
                 return -1
+            # Phase 4: Put Armies on Conquered Country
+            elif self.gamePhase == 4:
+                defendingPlayer = self.countries[to_country][1].keys()[0]
+                self.gamePhase = 2;
+
+                self.countries[to_country][1].clear()
+                self.countries[to_country][1][player.playerNum] = num_armies # change ownership of country
+                player.occupiedCountries[to_country] = num_armies
+                player.occupiedCountries[from_country] = player.numArmiesPlacing - num_armies
+                self.countries[from_country][1][player.playerNum] = player.numArmiesPlacing - num_armies
+                self.players[defendingPlayer].occupiedCountries.pop(to_country) # def player doesn't have country anymore 
+                player.numArmiesPlacing = 0
+                       
+
+                
         return
 
     ###############################################
     # Returns a list of possible moves based on the state passed in
     # Params:  stage   What stage of the move to get moves for
-    #                     1 == placing armies, 2 == attacking, 3 == fortifying
+    #                     1 == placing armies, 2 == attacking, 3 == fortifying,
+    #                     4 == Picking how many armies to move to a conquered country
     #
     # 
     # Return [{from_country:(to_country, num_armies)},{from_country:(to_country, num_armies)}]
@@ -283,11 +293,26 @@ class Risk:
             moves.append({c:(c,-1)}) # flag for stopping an attack
 
         # Fortifying
-        else:
+        elif stage == 3:
             for c in player.occupiedCountries:
                 for cto in self.countries[c][0]:
                     if cto in player.occupiedCountries:
                         moves.extend({c:(cto,x)} for x in range(1,self.countries[c][1][player.Num]))
+
+        # Picking # Armies to move to Conquered Country
+        elif stage == 4:
+            # player = player who conquered a territory
+            if player.conqueredTerritory:
+                for c in player.occupiedCountries.items():
+                    if c[1] == 0:
+                        attack_country = c[0]
+                        break
+                for c in self.countries.items():
+                    if 0 in c[1][1].values():
+                        conquered_country = c[0]
+                        break
+                moves.extend({attack_country:(conquered_country,x)} for x in range(1,player.numArmiesPlacing)) 
+            
         return moves
     
     ######################################
@@ -722,7 +747,6 @@ class Risk:
 
                 else:
                     country = random.choice(self.players[i].occupiedCountries.keys())
-                    print 
                     self.countries[country][1][self.players[i].playerNum] += 1
                     self.players[i].occupiedCountries[country] += 1
 
