@@ -4,6 +4,7 @@ import copy
 import sys, random
 import globalVals
 from risk_player import RiskPlayer
+from CompRiskPlayer import CompRiskPlayer
 import pdb
 
 class Risk:
@@ -151,16 +152,10 @@ class Risk:
                     attack_dice = self.rollDice(2)
                 else:
                     attack_dice = self.rollDice(1)
-                print '\nThe attacking dice are:'
-                print attack_dice
                 if self.countries[to_country][1][defendingPlayer] > 1: 
                     defend_dice = self.rollDice(2)
-                    print '\nThe defending dice are:'
-                    print defend_dice
                 else:
                     defend_dice = self.rollDice(1)
-                    print '\nThe defending dice are:'
-                    print defend_dice
                  
                 rollSum = 0
                 if len(attack_dice) == 3 or len(attack_dice) == 2:
@@ -287,10 +282,12 @@ class Risk:
         # Attacking 
         elif stage == 2:
             for c in player.occupiedCountries:
+
                 for ct in self.countries[c][0]:
                     if not(ct in player.occupiedCountries):
                         moves.extend({c:(ct,x)} for x in range(1,4) if x <= self.countries[c][1][player.playerNum]-1)  # can attack from all occupied countries with at least 2 armies on it
             moves.append({c:(c,-1)}) # flag for stopping an attack
+
 
         # Fortifying
         elif stage == 3:
@@ -332,9 +329,12 @@ class Risk:
                 gameState += country + ': [ ' + str(playerArmies) + ' ]\n'
 
         return gameState
-        
-    def DoRandomMove(self):
-       pass
+    
+    # Do a random computer move    
+    def DoRandomMove(self, player):
+        choice = random.choice(self.GetMoves(player, self.gamePhase, player.numArmiesPlacing))
+        self.DoMove(choice, player)
+       
 
     ################################################
     # Do a move as a human, depends on the         #
@@ -726,9 +726,9 @@ class Risk:
     def randomizeInitialState(self):
         armiesToPlaceEach = 40-((globalVals.maxPlayers-2)*5)
 
-        self.players.append(RiskPlayer(0, globalVals.red))
+        self.players.append(CompRiskPlayer(0, globalVals.red))
         self.players.append(RiskPlayer(1, globalVals.blue))
-
+        
 
         numEmptyCountries = len(self.countries)
         while armiesToPlaceEach > 0:
