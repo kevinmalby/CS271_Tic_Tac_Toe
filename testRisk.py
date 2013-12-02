@@ -2,12 +2,8 @@ import Risk as r
 from risk_player import RiskPlayer
 from risk_comp_player import CompRiskPlayer
 import pdb
-<<<<<<< HEAD
-=======
-from unittest import TestCase as tc
 import globalVals
 import random
->>>>>>> 48ef8412c168a3778e5bedd410c7358a2986d4ba
 
 def rollDiceWin(x):
     if x == 3:
@@ -33,11 +29,7 @@ class Test:
     def setup(self):
         """Initialize a game and some computer players"""
         self.game = r.Risk("countries.txt", "territory_cards.txt", 2)
-<<<<<<< HEAD
         self.game.players.extend([CompRiskPlayer(0,"blue"), CompRiskPlayer(1,"red")])
-=======
-        self.game.players.extend([RiskPlayer(0,globalVals.blue), RiskPlayer(1,globalVals.red)])
->>>>>>> 48ef8412c168a3778e5bedd410c7358a2986d4ba
         self.game.players[0].occupiedCountries = {"Argentina": 10, "Brazil":15, "Peru":20,"Venezuela":5}
         self.game.players[1].occupiedCountries = {"Congo":25,"Alaska": 1, "Greenland": 16, "Central America":8, "Eastern United States":2, "North Africa":7}
         for p in self.game.players:
@@ -67,7 +59,7 @@ class Test:
             'Fail Place Test: Country didnt get the right number of armies in game.countries'
         if 2 != self.game.gamePhase:
             'Fail Place test: game phase wrong'
-        print "Done Phase 1 DoMove Tests\n"
+        print "Done Phase 1 DoMove Tests"
         ## Attacking Phase Tests
         print "Testing Attacking Phase"
         self.setup()
@@ -77,6 +69,7 @@ class Test:
         p_1_num_countries = len(p_1.occupiedCountries)
         p_2_num_countries = len(p_2.occupiedCountries)
         
+        pdb.set_trace()
         # Attacker Wins
         self.game.rollDice = rollDiceWin
         move = {"Venezuela":("Central America", 3)}
@@ -155,7 +148,7 @@ class Test:
         if len(p_1.occupiedCountries) != (p_1_num_countries-1):
             print "Failed Ownership Change; Defender didn't lose country"
         if len(p_2.cards) != 1:
-            print "Failed Owndership Change; Attacker didn't get a card"
+            print "Failed Ownership Change; Attacker didn't get a card"
         if "Brazil" in p_1.occupiedCountries:
             print "Failed Ownership Change: Defender still has control of country"
         if not ("Brazil" in p_2.occupiedCountries):
@@ -212,8 +205,7 @@ class Test:
             print "Fail Fortifying: Next player didn't get armies to place"
         
         print "Done Phase Three Testing"
-<<<<<<< HEAD
-
+        print "Done Testing DoMove"
 
     def test_CompPlayer(self):
         """Test Computer Player's methods"""
@@ -280,13 +272,7 @@ class Test:
             print "Fail CompPlayer UseCards: Didn't give extra to occupied Countries in game.countries"
         print "Finished CompPlayer UseCards Testing\n" 
 
-def main():
-    """Run Tests"""
-#    Test().test_DoMove()
-    Test().test_CompPlayer()
 
-if "__name__" == "main":
-=======
 
     ############################################
     # Not even close to a proper set of tests  #
@@ -342,14 +328,32 @@ if "__name__" == "main":
 
         print self.game.CheckWinAndScore(self.game.playersMove)
         
+    def test_GetMoves(self):
+            for x in range(5):
+                game = r.Risk('countries.txt', 'territory_cards.txt', 2);
+                game.randomizeInitialState()
+                p_1 = game.players[0]
+                p_2 = game.players[1]
+                moves = game.GetMoves(p_1,2)
+                for k in moves:
+                    if k.values()[0][0] in p_1.occupiedCountries and k.values()[0][1] != -1:
+                        print "INVALID P_1"
+                        print k.values()[0][0]
+                moves = game.GetMoves(p_2,2)
+                for k in moves:
+                    if k.values()[0][0] in p_2.occupiedCountries and k.values()[0][1] != -1:
+                        print "INVALID P_2"
+                        print k.values()[0][0]
+                        
 
 def main():
+    Test().test_GetMoves()
     Test().test_DoMove()
+    Test().test_CompPlayer;
     Test().TestHumanMove()
 
 
 if __name__ == "__main__":
->>>>>>> 48ef8412c168a3778e5bedd410c7358a2986d4ba
     main()
 
 

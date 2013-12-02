@@ -244,7 +244,8 @@ class Risk:
                 player.occupiedCountries[to_country] += num_armies
                 self.gamePhase = 1
                 self.playersMove = (player.playerNum + 1) % globalVals.maxPlayers
-                self.players[self.playersMove].numArmiesPlacing = self.players[self.playersmove].GetNewArmies(self)
+
+                self.players[self.playersMove].numArmiesPlacing = self.players[self.playersMove].GetNewArmies(self)
 
                 # Get the number of armies to place for the next player
                 self.setContinentControl()
@@ -276,8 +277,10 @@ class Risk:
         # Attacking 
         elif stage == 2:
             for c in player.occupiedCountries:
-                moves.extend({c:(ct,x)} for ct in self.countries[c][0]for x in range(1,4) if x <= self.countries[c][1][player.playerNum]-1)  # can attack from all occupied countries with at least 2 armies on it
-                moves.append({c:(c,-1)}) # flag for stopping an attack
+                for ct in self.countries[c][0]:
+                    if not(ct in player.occupiedCountries):
+                        moves.extend({c:(ct,x)} for x in range(1,4) if x <= self.countries[c][1][player.playerNum]-1)  # can attack from all occupied countries with at least 2 armies on it
+            moves.append({c:(c,-1)}) # flag for stopping an attack
 
         # Fortifying
         else:
