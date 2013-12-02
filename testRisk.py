@@ -1,11 +1,11 @@
 import Risk as r
 from risk_player import RiskPlayer
+from risk_comp_player import CompRiskPlayer
 import pdb
-from unittest import TestCase as tc
 
 def rollDiceWin(x):
     if x == 3:
-        return [6,6,6]
+        return [6,5,3]
     if x == 2:
         return [1,1]
     if x == 1:
@@ -25,8 +25,9 @@ def rollDiceTie(x):
 
 class Test:
     def setup(self):
+        """Initialize a game and some computer players"""
         self.game = r.Risk("countries.txt", "territory_cards.txt", 2)
-        self.game.players.extend([RiskPlayer(0,"blue"), RiskPlayer(1,"red")])
+        self.game.players.extend([CompRiskPlayer(0,"blue"), CompRiskPlayer(1,"red")])
         self.game.players[0].occupiedCountries = {"Argentina": 10, "Brazil":15, "Peru":20,"Venezuela":5}
         self.game.players[1].occupiedCountries = {"Congo":25,"Alaska": 1, "Greenland": 16, "Central America":8, "Eastern United States":2}
         for p in self.game.players:
@@ -172,6 +173,7 @@ class Test:
         p_2 = self.game.players[1]
         self.game.gamePhase = 3
         p_1.numArmiesPlacing = 2
+        p_2.numArmiesPlacing = 0
         num_armies = 2
         num_in_Peru = p_1.occupiedCountries["Peru"]
         num_in_Argentina = p_1.occupiedCountries["Argentina"]
@@ -197,11 +199,81 @@ class Test:
             print "Fail Fortifying: From country lost armies on error"
         if (p_1.occupiedCountries["Argentina"] != (num_in_Argentina+num_armies)) or (self.game.countries["Argentina"][1][p_1.playerNum] != (num_in_Argentina + num_armies)):
             print "Fail Fortifying: To country gained armies on error"
+        if p_2.numArmiesPlacing != p_2.GetNewArmies(self.game):
+            print "Fail Fortifying: Next player didn't get armies to place"
         
         print "Done Phase Three Testing"
-def main():
-    Test().test_DoMove()
 
+
+    def test_CompPlayer(self):
+        """Test Computer Player's methods"""
+        # Test UseCards()
+        print "Testing CompPlayer UseCards()"
+        self.setup()
+        p_1 = self.game.players[0]
+        # 3 of a kind
+        p_1.cards = {'Congo':'Canon', 'North America':'Horse', 'Kamchatka':'Canon','Wild1':'wild','Alaska':'Canon'}
+        numNewCards = p_1.UseCards(self.game)
+        if numNewCards != self.game.tradeInValues[self.game.tradeInPlaceholder-1]:
+            print "Fail CompPlayer UseCards: Wrong num armies returned"
+        if 'Congo' in p_1.cards or 'Kamchatka' in p_1.cards or 'Alaska' in p_1.cards:
+            print "Fail CompPlayer UseCards: Didn't delete right cards"
+        if not('North America' in p_1.cards) or not('Wild1' in p_1.cards):
+            print "Fail CompPlayer UseCards: Deleted wrong cards"
+            
+        # one of each
+        p_1.cards = {'Congo':'Canon', 'North America':'Horse', 'Kamchatka':'Canon','Wild1':'wild','Alaska':'Solider'}
+        numNewCards = p_1.UseCards(self.game)
+        if numNewCards != self.game.tradeInValues[self.game.tradeInPlaceholder-1]:
+            print "Fail CompPlayer UseCards: Wrong num armies returned"
+        if 'Congo' in p_1.cards or 'North America' in p_1.cards or 'Alaska' in p_1.cards:
+            print "Fail CompPlayer UseCards: Didn't delete right cards"
+        if not('Kamchatka' in p_1.cards) or not('Wild1' in p_1.cards):
+            print "Fail CompPlayer UseCards: Deleted wrong cards"
+
+        # 2 and a wild
+        p_1.cards = {'Congo':'Canon', 'North America':'Horse', 'Kamchatka':'Canon','Wild1':'wild','Alaska':'something'}
+        numNewCards = p_1.UseCards(self.game)
+        if numNewCards != self.game.tradeInValues[self.game.tradeInPlaceholder-1]:
+            print "Fail CompPlayer UseCards: Wrong num armies returned"
+        if 'Congo' in p_1.cards or 'Kamchatka' in p_1.cards or 'Wild1' in p_1.cards:
+            print "Fail CompPlayer UseCards: Didn't delete right cards"
+        if not('North America' in p_1.cards) or not('Alaska' in p_1.cards):
+            print "Fail CompPlayer UseCards: Deleted wrong cards"
+
+        # none
+        p_1.cards = {'Congo':'Canon', 'North America':'Horse', 'Kamchatka':':D','Wild1':'wild','Alaska':'something'}
+        numNewCards = p_1.UseCards(self.game)
+        if numNewCards != 0:
+            print "Fail CompPlayer UseCards: Gave armies for free"
+        if not('North America' in p_1.cards) or not('Alaska' in p_1.cards) or not('Congo' in p_1.cards) or not('Kamchatka' in p_1.cards) or not('Wild1' in p_1.cards):
+            print "Fail CompPlayer UseCards: Deleted cards when had no matches"
+
+
+        # extra armies for cards
+        pdb.set_trace()
+        p_1.cards = {'Brazil':'Canon', 'Peru':'Horse', 'Venezuela':'Canon','Argentina':'Canon'}
+        num_in_Brazil = p_1.occupiedCountries['Brazil']
+        num_in_Peru = p_1.occupiedCountries['Peru']
+        num_in_Venezuela = p_1.occupiedCountries['Venezuela']
+        num_in_Arg = p_1.occupiedCountries['Argentina']
+        numNewCards = p_1.UseCards(self.game)
+        if numNewCards != self.game.tradeInValues[self.game.tradeInPlaceholder-1]:
+            print "Fail CompPlayer UseCards: Wrong num armies returned"
+        if 'Brazil' in p_1.cards or 'Venezuela' in p_1.cards or 'Argentina' in p_1.cards:
+            print "Fail CompPlayer UseCards: Didn't delete right cards"
+        if not('Peru' in p_1.cards):
+            print "Fail CompPlayer UseCards: Deleted wrong cards"
+        if p_1.occupiedCountries['Brazil'] != num_in_Brazil +2 or  p_1.occupiedCountries['Peru'] != num_in_Peru +2 or  p_1.occupiedCountries['Venezuela'] != num_in_Venezuela +2 or  p_1.occupiedCountries['Argentina'] != num_in_Arg +2:
+            print "Fail CompPlayer UseCards: Didn't give extra to occupied Countries"
+        if self.game.countries['Brazil'][1][p_1.playerNum] != num_in_Brazil +2 or   self.game.countries['Peru'][1][p_1.playerNum] != num_in_Peru +2 or  self.game.countries['Venezuela'][1][p_1.playerNum] != num_in_Venezuela +2 or self.game.countries['Argentina'][1][p_1.playerNum] != num_in_Arg +2:
+            print "Fail CompPlayer UseCards: Didn't give extra to occupied Countries in game.countries"
+        print "Finished CompPlayer UseCards Testing\n" 
+
+def main():
+    """Run Tests"""
+#    Test().test_DoMove()
+    Test().test_CompPlayer()
 
 if "__name__" == "main":
     main()

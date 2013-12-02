@@ -163,10 +163,10 @@ class Risk:
                 player.occupiedCountries[to_country] += num_armies
                 self.gamePhase = 1
                 self.playersMove = (player.playerNum + 1) % globalVals.maxPlayers
+                self.players[self.playersMove].numArmiesPlacing = self.players[self.playersmove].GetNewArmies(self)
             else:
                 print "Phase Three invalid move"
                 return -1
-                # error message
         return
 
     ###############################################
