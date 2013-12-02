@@ -19,7 +19,7 @@ Europe:7
     Northern Europe-    Great Britain, Scandinavia, Southern Europe, Ukraine, Western Europe
     Scandinavia-     Great Britain, Iceland, Northern Europe, Ukraine 
     Southern Europe-    Western Europe, Northern Europe, Ukraine, North Africa, Egypt, Middle East
-    Ukraine-  Scandinavia, Northern Europe, Southern Europe, Ural, Afganistan, Middle East
+    Ukraine-  Scandinavia, Northern Europe, Southern Europe, Ural, Afghanistan, Middle East
     Western Europe-	  Great Britain, Northern Europe, Southern Europe, North Africa
 Africa:6
     Congo-	North Africa, South Africa, East Africa
@@ -30,16 +30,16 @@ Africa:6
     South Africa-     Madagascar, Congo, East Africa
 Asia:12	  
     Afghanistan-	Middle East, Ural, Ukraine, China, India
-    China-	Mongolia, Afganistan, India, Siam, Siberia, Ural
-    India-	Middle East, Afganistan, China, Siam
+    China-	Mongolia, Afghanistan, India, Siam, Siberia, Ural
+    India-	Middle East, Afghanistan, China, Siam
     Irkutsk-	Siberia, Yakutsk, Kamchatka, Mongolia
     Japan-	Kamchatka, Mongolia
     Kamchatka-	Alaska, Yakutsk, Irkutsk, Mongolia, Japan
-    Middle East-	India, Afganistan, Ukraine, Southern Europe, Egypt
+    Middle East-	India, Afghanistan, Ukraine, Southern Europe, Egypt
     Mongolia-	Japan, China, Siberia, Irkutsk, Kamchatka
     Siam-	China, India, Indonesia
     Siberia-	Ural, China, Mongolia, Irkutsk, Yakutsk
-    Ural-	Ukraine, Afganistan, China, Siberia
+    Ural-	Ukraine, Afghanistan, China, Siberia
     Yakutsk-	Siberia, Kamchatka, Irkutsk
 Australia:4 
     Eastern Australia-	New Guinea, Western Australia

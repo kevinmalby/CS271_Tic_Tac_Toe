@@ -117,6 +117,7 @@ class Risk:
 
         # Phase 1 - Place armies on country
         if self.gamePhase == 1 and player.numArmiesPlacing >= num_armies:
+            print '\nPlacing %d armies on %s\n' %(num_armies, from_country)
             if c_info.has_key(player.playerNum):
                 c_info[player.playerNum] += num_armies
                 player.occupiedCountries[to_country] += num_armies
@@ -138,6 +139,7 @@ class Risk:
         elif self.gamePhase == 2:
             if num_armies == -1:
                 #flag to stop attacking
+                print '\nDone Attacking!\n'
                 if player.conqueredTerritory == True:
                     new_card = self.territoryCards.popitem()
                     player.cards[new_card[0]] = new_card[1] # get a card
@@ -145,6 +147,7 @@ class Risk:
                 self.gamePhase = 3
                 return
             if c_info[player.playerNum] > 1:
+                print '\nAttacking %s from %s with %d dice.\n' %(to_country, from_country, num_armies)
                 if num_armies > 2:
                     attack_dice = self.rollDice(3)
                 elif num_armies > 1:
@@ -236,6 +239,7 @@ class Risk:
                 self.gamePhase = 3
         # Phase 3 - Fortify; countries add/lose armies
         elif self.gamePhase == 3:
+            print '\nFortifying from %s to %s with %d armies.\n' %(from_country, to_country, num_armies)
             #pdb.set_trace()
             if c_info[player.playerNum] -1 >= num_armies and to_country in self.countries[from_country][0] and to_country in player.occupiedCountries.keys():
                 c_info[player.playerNum] -= num_armies
@@ -277,17 +281,19 @@ class Risk:
         # Attacking 
         elif stage == 2:
             for c in player.occupiedCountries:
+
                 for ct in self.countries[c][0]:
                     if not(ct in player.occupiedCountries):
                         moves.extend({c:(ct,x)} for x in range(1,4) if x <= self.countries[c][1][player.playerNum]-1)  # can attack from all occupied countries with at least 2 armies on it
             moves.append({c:(c,-1)}) # flag for stopping an attack
+
 
         # Fortifying
         else:
             for c in player.occupiedCountries:
                 for cto in self.countries[c][0]:
                     if cto in player.occupiedCountries:
-                        moves.extend({c:(cto,x)} for x in range(1,self.countries[c][1][player.Num]))
+                        moves.extend({c:(cto,x)} for x in range(1,self.countries[c][1][player.playerNum]))
         return moves
     
     ######################################
@@ -307,9 +313,14 @@ class Risk:
                 gameState += country + ': [ ' + str(playerArmies) + ' ]\n'
 
         return gameState
-        
-    def DoRandomMove(self):
-       pass
+    
+    # Do a random computer move    
+    def DoRandomMove(self, player):
+        choice = random.choice(self.GetMoves(player, self.gamePhase, player.numArmiesPlacing))
+        print '\nFuck'
+        print choice
+        self.DoMove(choice, player)
+       
 
     ################################################
     # Do a move as a human, depends on the         #
@@ -701,9 +712,9 @@ class Risk:
     def randomizeInitialState(self):
         armiesToPlaceEach = 40-((globalVals.maxPlayers-2)*5)
 
-        self.players.append(RiskPlayer(0, globalVals.red))
+        self.players.append(CompRiskPlayer(0, globalVals.red))
         self.players.append(RiskPlayer(1, globalVals.blue))
-
+        
 
         numEmptyCountries = len(self.countries)
         while armiesToPlaceEach > 0:
