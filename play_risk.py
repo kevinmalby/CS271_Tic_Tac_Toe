@@ -31,8 +31,7 @@ def main():
         if riskState.playersMove == 1:
             move = riskState.DoHumanMove(curPlayer)
             print move
-            if move != 'ignore':
-                riskState.DoMove(move, curPlayer)
+            riskState.DoMove(move, curPlayer)
         elif riskState.playersMove == 0:
             # move = riskState.DoHumanMove(curPlayer)
             # print move

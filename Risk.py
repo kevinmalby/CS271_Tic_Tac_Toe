@@ -255,8 +255,6 @@ class Risk:
                 self.countries[from_country][1][player.playerNum] = player.numArmiesPlacing - num_armies
                 self.players[defendingPlayer].occupiedCountries.pop(to_country) # def player doesn't have country anymore 
                 player.numArmiesPlacing = 0
-                       
-
                 
         return
 
@@ -366,8 +364,8 @@ class Risk:
             move = self.HumanFortify(player)
 
         if self.gamePhase == 4:
-            self.gamePhase = 3
-            move = 'ignore'
+
+            move = HumanMoveAfterConquer(player)
 
         return move
 
@@ -548,6 +546,43 @@ class Risk:
                 moveDone = False
 
         return {attacker:(victim, attackCount)}
+
+    ###################################################
+    # Move armies to conquered territory, returns the #
+    # result in the proper format of                  #
+    # {countryFrom:(countryTo,numArmies)}             #
+    ###################################################
+    def HumanMoveAfterConquer(self, player):
+        for c in player.occupiedCountries.items():
+            if c[1] == 0:
+                attack_country = c[0]
+                break
+        for c in self.countries.items():
+            if 0 in c[1][1].values():
+                conquered_country = c[0]
+                break
+
+        moveDone = False
+        while moveDone != True:
+            moveDone = True
+
+            # Select the number of armies to place in that country
+            armiesToMove = raw_input('Please type the number of armies you wish to move to %s: ' %(conquered_country))
+            print ''
+            try:
+                armiesToMoveNum = int(armiesToMove)
+            except:
+                moveDone = False
+                print 'That was not a number.\n'
+                errorVal = 1
+                continue
+
+            if armiesToMoveNum not in range(1,self.countries[attack_country][1].values()[0] - 1):
+                moveDone = False
+                errorVal = 1
+                print 'You must place at least 1 army in the country and you must leave at least one army behind.\n'
+
+        return {attack_country:(conquered_country, armiesToMoveNum)}        
 
 
     ################################################
