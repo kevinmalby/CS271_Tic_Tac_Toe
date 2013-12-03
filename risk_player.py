@@ -12,10 +12,7 @@ class RiskPlayer:
     def GetNewArmies(self, riskState):
         totalNewArmies = 0
 
-        print self.continentsHeld
         for key, value in self.continentsHeld.iteritems():
-            print key
-            print value
             totalNewArmies += value
 
         if (len(self.occupiedCountries) / 3) > 3:
@@ -25,7 +22,8 @@ class RiskPlayer:
 
         if len(self.cards) > 5:
             print 'You must turn in at least 3 of your cards this round'
-            totalNewArmies += self.UseCards(riskState)
+            totalNewArmies = self.UseCards(riskState)
+            return totalNewArmies
         elif len(self.cards) < 3:
             print 'You currently have less than 3 cards, you will not be able to cash them in.'
         else:
@@ -89,18 +87,15 @@ class RiskPlayer:
         numNewArmies += riskState.tradeInValues[riskState.tradeInPlaceholder]
         riskState.tradeInPlaceholder += 1
 
-
-        print cardChoiceKeys
         for country in cardChoiceKeys:
 
             if country in self.occupiedCountries:
                 curCountry = riskState.countries[country]
                 curCountry[1][self.playerNum] += 2
+                self.occupiedCountries[country] += 2
 
             # Remove the card from the players hand because it has been used
             del self.cards[country]
-
-
 
         # Return the final number of armies to place
         return (numNewArmies)
@@ -110,7 +105,6 @@ class RiskPlayer:
 
         # Check if all cards have the same symbol
         if cards[0] == cards[1] == cards[2]:
-            print '\nThey were all the same!\n'
             return True 
 
         # Check if all cards are different (Will handle wild okay because it will see it as different)
