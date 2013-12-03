@@ -32,10 +32,12 @@ class Test:
         self.game.players.extend([CompRiskPlayer(0,"blue"), CompRiskPlayer(1,"red")])
         self.game.players[0].occupiedCountries = {"Argentina": 10, "Brazil":15, "Peru":20,"Venezuela":5}
         self.game.players[1].occupiedCountries = {"Congo":25,"Alaska": 1, "Greenland": 16, "Central America":8, "Eastern United States":2, "North Africa":7}
+        self.game.playersMove = 0
         for p in self.game.players:
             for c in p.occupiedCountries:
                 self.game.countries[c][1].clear()
                 self.game.countries[c][1][p.playerNum] = p.occupiedCountries[c]
+        
         
 
     def test_DoMove(self):
@@ -125,6 +127,7 @@ class Test:
         # Win results in country ownership change
         self.setup()
         self.game.gamePhase = 2
+        self.game.playersMove = 1
         p_1 = self.game.players[0]
         p_2 = self.game.players[1]
         num_armies_in_Congo = 6
@@ -145,6 +148,17 @@ class Test:
         self.game.rollDice = rollDiceWin
         self.game.DoMove(move, p_2)
 
+        # now should be in phase 4
+        if self.game.gamePhase != 4:
+            print "Failed Phase Four Test: Didn't change from phase 3"
+        if self.game.playersMove != p_2.playerNum:
+            print "Failed Phase Four Test: Turn changed."
+        
+        move = {"Congo":('Brazil', 3)}
+        self.game.DoMove(move,p_2)
+        
+        if self.game.gamePhase != 2:
+            print "Failed Phase Four Test: Game phase didn't change back to attacking"
         if (len(p_2.occupiedCountries) -1 ) != p_2_num_countries:
             print "Failed Ownership Change; Attacker didn't gain country"
         if len(p_1.occupiedCountries) != (p_1_num_countries-1):
@@ -159,7 +173,8 @@ class Test:
             print "Failed Ownership Change: num armies in defender country not updated"
         if (p_2.occupiedCountries["Congo"] != (num_armies_in_Congo -3)) or (self.game.countries["Congo"][1][p_2.playerNum] != (num_armies_in_Congo-3)): 
             print "Failed Ownership Change: num armies in attacking country not updated"
-    
+          
+
         # Errors
             # Countries not adjacent
 

@@ -244,7 +244,7 @@ class Risk:
                 print "Phase Three invalid move"
                 return -1
             # Phase 4: Put Armies on Conquered Country
-            elif self.gamePhase == 4:
+        elif self.gamePhase == 4:
                 defendingPlayer = self.countries[to_country][1].keys()[0]
                 self.gamePhase = 2;
 
@@ -294,7 +294,7 @@ class Risk:
             for c in player.occupiedCountries:
                 for cto in self.countries[c][0]:
                     if cto in player.occupiedCountries:
-                        moves.extend({c:(cto,x)} for x in range(1,self.countries[c][1][player.Num]))
+                        moves.extend({c:(cto,x)} for x in range(1,self.countries[c][1][player.playerNum]))
 
         # Picking # Armies to move to Conquered Country
         elif stage == 4:
@@ -758,7 +758,7 @@ class Risk:
     # representation of the current game state #
     ############################################
     def DrawMap(self):
-        map = pygame.image.load('/home/kevin/Pictures/risk_map.png')
+        map = pygame.image.load('risk_map.png')
         w = 1227
         h = 628
         screen = pygame.display.set_mode((w,h))

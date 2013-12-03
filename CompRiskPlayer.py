@@ -1,4 +1,5 @@
 from risk_player import RiskPlayer
+import pdb
 
 class CompRiskPlayer(RiskPlayer):
 
@@ -9,8 +10,9 @@ class CompRiskPlayer(RiskPlayer):
 
         totalNewArmies = 0
         
-        for key, value in self.continentsHeld:
-            totalNewArmies += value
+        for item in self.continentsHeld.iteritems():
+            pdb.set_trace()
+            totalNewArmies += item[1]
             
         totalNewArmies += len(self.occupiedCountries) / 3
             
