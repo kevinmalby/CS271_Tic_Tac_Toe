@@ -16,7 +16,7 @@ class Risk:
         self.playersMove = -1
         self.territoryCards = {} # {"North America":"Canon"}
         self.countryLocations = {}
-        self.tradeInValues = (4,6,8,10,12,15,20,25,30,35,40,45)
+        self.tradeInValues = (4,6,8,10,12,15,20,25,30,35,40,45,50,55)
         self.tradeInPlaceholder = 0
         self.gamePhase = 1
         if country_file != "":
@@ -234,12 +234,11 @@ class Risk:
                 self.gamePhase = 1
                 self.playersMove = (player.playerNum + 1) % len(self.players)
 
-                self.players[self.playersMove].numArmiesPlacing = self.players[self.playersMove].GetNewArmies(self)
-
                 # Get the number of armies to place for the next player
+                self.DrawMap()
                 self.setContinentControl()
                 player = self.players[self.playersMove]
-                player.numArmiesPlacing = player.GetNewArmies(self.Clone())
+                self.players[self.playersMove].numArmiesPlacing = self.players[self.playersMove].GetNewArmies(self)
             else:
                 print "Phase Three invalid move"
                 return -1
@@ -307,7 +306,7 @@ class Risk:
                         conquered_country = c[0]
                         break
                 moves.extend({attack_country:(conquered_country,x)} for x in range(1,player.numArmiesPlacing)) 
-            
+
         return moves
     
     ######################################
@@ -347,7 +346,6 @@ class Risk:
 
         # If we are in the placement phase do the following
         if self.gamePhase == 1:
-
             # Execute the placement phase
             move = self.HumanPlaceArmies(player.numArmiesPlacing, player)
 
@@ -365,7 +363,7 @@ class Risk:
 
         if self.gamePhase == 4:
 
-            move = HumanMoveAfterConquer(player)
+            move = self.HumanMoveAfterConquer(player)
 
         return move
 
@@ -577,7 +575,7 @@ class Risk:
                 errorVal = 1
                 continue
 
-            if armiesToMoveNum not in range(1,self.countries[attack_country][1].values()[0] - 1):
+            if armiesToMoveNum not in range(1,self.countries[attack_country][1].values()[0]):
                 moveDone = False
                 errorVal = 1
                 print 'You must place at least 1 army in the country and you must leave at least one army behind.\n'
@@ -703,22 +701,8 @@ class Risk:
     # will always be the case that the player who # 
     # just went is the player who won             #
     ###############################################
-    def CheckWinAndScore(self, playerJustMoved):
-        
-        initialCountry = random.choice(self.countries.values())
-        curPlayerNum = initialCountry[1].keys()[0]
-        for country, content in self.countries.iteritems():
-            occupiedBy = content[1].keys()[0]
-
-           # # If the game is not over, return -1
-            if occupiedBy != curPlayerNum:
-                return -1
-           # If the game isn't over, return 1 if the player who just won has more
-           # countries, and hence a "win"
-           # 
-            curPlayerNum = occupiedBy
-        
-        if curPlayerNum == playerJustMoved:
+    def Score(self, playersMove):
+        if curPlayerNum == playersMove:
             return 1.0
         else:
             return 0.0

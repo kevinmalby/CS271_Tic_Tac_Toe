@@ -7,7 +7,6 @@ def main():
     riskState.randomizeInitialState()
     riskState.playersMove = 0
     initPlayer = riskState.players[riskState.playersMove]
-    initPlayer.LongPrint()
     riskState.setContinentControl()
     
 
@@ -18,15 +17,19 @@ def main():
         riskState.territoryCards.pop(new_card[0])
         initPlayer.cards[new_card[0]] = new_card[1]
 
+    for i in range(0,7):
+        name = random.choice(riskState.territoryCards.keys())
+        val = riskState.territoryCards[name]
+        new_card = [name, val]
+        riskState.territoryCards.pop(new_card[0])
+        riskState.players[1].cards[new_card[0]] = new_card[1]
+
     numA = initPlayer.GetNewArmies(riskState)
     initPlayer.numArmiesPlacing = numA
 
     while True:
         curPlayer = riskState.players[riskState.playersMove]
-
-        print riskState
-        # Determine the continents that each player possesses
-        #riskState.setContinentControl()
+        riskState.DrawMap()
 
         if riskState.playersMove == 1:
             move = riskState.DoHumanMove(curPlayer)
