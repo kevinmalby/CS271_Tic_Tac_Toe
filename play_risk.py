@@ -36,7 +36,7 @@ def main():
             # move = riskState.DoHumanMove(curPlayer)
             # print move
             # riskState.DoMove(move, curPlayer)
-            riskState.DoRandomMove(curPlayer)
+            # riskState.DoRandomMove(curPlayer)
         else:
             pass
 

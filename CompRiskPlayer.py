@@ -1,37 +1,34 @@
 from risk_player import RiskPlayer
 import pdb
 import itertools
+import montecarlotree as mct
 
 class CompRiskPlayer(RiskPlayer):
 
     def __init__(self, player_num, player_color):
        RiskPlayer.__init__(self, player_num, player_color)
+       self.myTree = mct.MonteCarloMethod()
 
     def GetNewArmies(self, riskState):
-
         totalNewArmies = 0
         
         for item in self.continentsHeld.iteritems():
             totalNewArmies += item[1]
             
         totalNewArmies += len(self.occupiedCountries) / 3
-            
         totalNewArmies += self.UseCards(riskState)
 
         return totalNewArmies
 
 
     def UseCards(self, riskState):
-
         if len(self.cards) < 3:
             return 0
 
         numNewArmies = 0
-
         # Choose 3 cards that work for trading in,
         # try and choose ones that have countries the computer
-        # owns
-
+        # 
         # collect all possible working combinations of cards
         iterCombinations = itertools.combinations(self.cards, 3)
         allCombinations = []
@@ -112,3 +109,13 @@ class CompRiskPlayer(RiskPlayer):
 
         # The player chose cards that cannot be combined so return false
         return False
+
+    # #################
+    # Use the MCST to pick a good move
+    #
+    #
+    ######################
+    def MakeMove(self, riskstate):
+        pdb.set_trace()
+        move = self.myTree.TreeSearch(riskstate,50,False)
+        return move

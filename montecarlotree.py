@@ -10,8 +10,9 @@ class Node:
         self.childNodes = []
         self.wins = 0
         self.visits = 0
-        self.untriedMoves = state.GetMoves()
-        self.playerJustMoved = state.playerJustMoved
+        self.untriedMoves = state.GetMoves(state.players[state.playersMove],state.gamePhase)
+       # self.playerJustMoved = state.playerJustMoved
+        self.playerJustMoved = state.playersMove
 
     def SelectChild(self):
         s = sorted(self.childNodes, key = lambda child: child.wins/child.visits + sqrt(2*log(self.visits)/child.visits))
@@ -25,7 +26,6 @@ class Node:
         return node
 
     def GetNumDescendents(self, node):
-        
         if node == None:
             return
         
@@ -43,9 +43,8 @@ class Node:
         return "Node"
 
 class MonteCarloMethod:
-
+    
     def TreeSearch(self, rootstate, numIterations, drawtree = False):
-
         rootnode = Node(None, None, rootstate)
         size = width, height = 1640, 1024
 
@@ -67,24 +66,23 @@ class MonteCarloMethod:
             # UCB1 Formula ( CurrentNodeWinRatio + Sqrt(2*log(TotalSimulations)/VisitsAtThisNode) )
             while curNode.untriedMoves == [] and curNode.childNodes != []:
                 curNode = curNode.SelectChild()
-                curState.DoMove(curNode.move)
+                curState.DoMove(curNode.move, curState.players[curState.playersMove])
 
             # Expand - If there are still moves to try, select one at random and expand the node with that move
             if curNode.untriedMoves != []:
                 move = random.choice(curNode.untriedMoves)
-                curState.DoMove(move)
+                curState.DoMove(move,curState.players[curState.playersMove])
                 curNode = curNode.AddChild(move, curState)
 
             # Rollout - Randomly play games from this point until game finishes
-            while curState.GetMoves() != []:
-                curState.DoRandomMove()
+            while curState.GetMoves(curState.players[curState.playersMove],curState.gamePhase) != []:
+                curState.DoRandomMove(curState.players[curState.playersMove])
 
             # Backpropogate - After the game is over, propogate the result of it (win/loss) through the expanded
             # nodes. Each node is updated with respect to which player won or lost
             while curNode != None:
-                curNode.Update(curState.CheckEndingConditions(curNode.playerJustMoved))
+                curNode.Update(curState.CheckWinAndScore(curNode.playerJustMoved))
                 curNode = curNode.parentNode
-
         return sorted(rootnode.childNodes, key = lambda node: node.visits)[-1].move
 
     # This is a recursive function that will draw the current Monte Carlo tree in memory

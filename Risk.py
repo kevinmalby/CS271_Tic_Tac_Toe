@@ -40,7 +40,7 @@ class Risk:
                     for x in range(int(cty[2])):
                         line = input.readline().strip()
                         line = line.split("-")
-                        edges = line[1].split(',') # country- border_1, border_2 
+                        edges = line[1].split(',')# country- border_1, border_2 
                         self.map[cty[0]].append(line[0].strip())
                         self.countries[line[0]] =[[x.strip() for x in edges],{-1:0}] 
                 line = input.readline()
@@ -232,7 +232,7 @@ class Risk:
                 self.countries[to_country][1][player.playerNum] += num_armies
                 player.occupiedCountries[to_country] += num_armies
                 self.gamePhase = 1
-                self.playersMove = (player.playerNum + 1) % globalVals.maxPlayers
+                self.playersMove = (player.playerNum + 1) % len(self.players)
 
                 self.players[self.playersMove].numArmiesPlacing = self.players[self.playersMove].GetNewArmies(self)
 
@@ -273,6 +273,7 @@ class Risk:
         moves = []
         # Placing Armies
         if stage == 1:
+            num_armies = player.numArmiesPlacing
             for c in player.occupiedCountries:
                 moves.extend({c:(c,x)} for x in range(1,num_armies + 1 -15,5))  # can put in groups of 5 if num_armies > 15
                 moves.extend({c:(c,x)} for x in range(1,16) if x <= num_armies)       # place in groups of 1 if num_armies < 15
@@ -280,10 +281,9 @@ class Risk:
         # Attacking 
         elif stage == 2:
             for c in player.occupiedCountries:
-
                 for ct in self.countries[c][0]:
-                    if not(ct in player.occupiedCountries):
-                        moves.extend({c:(ct,x)} for x in range(1,4) if x <= self.countries[c][1][player.playerNum]-1)  # can attack from all occupied countries with at least 2 armies on it
+                    if not(ct in player.occupiedCountries) and player.occupiedCountries[c] > 1:
+                        moves.extend({c:(ct,x)} for x in range(1,4) if x <= self.countries[c][1][player.playerNum]-1)  # can attack from all occupied countries as long as 1 is left
             moves.append({c:(c,-1)}) # flag for stopping an attack
 
 
@@ -710,10 +710,12 @@ class Risk:
         for country, content in self.countries.iteritems():
             occupiedBy = content[1].keys()[0]
 
-            # If the game is not over, return -1
+           # # If the game is not over, return -1
             if occupiedBy != curPlayerNum:
                 return -1
-
+           # If the game isn't over, return 1 if the player who just won has more
+           # countries, and hence a "win"
+           # 
             curPlayerNum = occupiedBy
         
         if curPlayerNum == playerJustMoved:
