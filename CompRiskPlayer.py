@@ -1,25 +1,22 @@
 from risk_player import RiskPlayer
 import pdb
+import itertools
 
 class CompRiskPlayer(RiskPlayer):
 
     def __init__(self, player_num, player_color):
        RiskPlayer.__init__(self, player_num, player_color)
 
-    def GetNewArmies(self, useCards=False):
+    def GetNewArmies(self, riskState):
 
         totalNewArmies = 0
         
         for item in self.continentsHeld.iteritems():
-            pdb.set_trace()
             totalNewArmies += item[1]
             
         totalNewArmies += len(self.occupiedCountries) / 3
             
-        if len(self.cards) > 6:
-            totalNewArmies += self.UseCards()
-        elif useCards == True:
-            totalNewArmies += self.UseCards()
+        totalNewArmies += self.UseCards(riskState)
 
         return totalNewArmies
 
@@ -36,13 +33,17 @@ class CompRiskPlayer(RiskPlayer):
         # owns
 
         # collect all possible working combinations of cards
-        allCombinations = itertools.combinations(self.cards, 3)
-        validCombinations = []
+        iterCombinations = itertools.combinations(self.cards, 3)
+        allCombinations = []
         validIndeces = []
 
-        for combination in allCombinations:
-            if self.CheckCards(combination):
-                validIndeces.append(combination)
+        for combination in iterCombinations:
+            allCombinations.append(combination)
+
+        for possibility in allCombinations:
+            cards = [self.cards[possibility[0]], self.cards[possibility[1]], self.cards[possibility[2]]]
+            if self.CheckCards(cards):
+                validIndeces.append(possibility)
 
         if not validIndeces:
             return 0
@@ -55,7 +56,8 @@ class CompRiskPlayer(RiskPlayer):
                     numCountries += 1
             if numCountries > maxOwnedCountries:
                 bestCards = option
-            
+                maxOwnedCountries = numCountries
+
 
         # Increase the number of armies by the current value that 3 cards gets you
         # Probably want to have an array with the army values and then an index

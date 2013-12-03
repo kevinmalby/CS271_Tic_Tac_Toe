@@ -365,6 +365,10 @@ class Risk:
             # Execute the fortify phase
             move = self.HumanFortify(player)
 
+        if self.gamePhase == 4:
+            self.gamePhase = 3
+            move = 'ignore'
+
         return move
 
     ################################################
@@ -439,6 +443,7 @@ class Risk:
         # print ''
         
         while True:
+            self.DrawMap()
             endAttack = raw_input('Would you like to stop attacking and move on to fortification? Enter y for yes and n for no. ')
             if endAttack == 'y':
                 return {'Alaska':('Alaska', -1)}
