@@ -125,7 +125,7 @@ class Risk:
         from_country = move.keys()[0]
         to_country = move[from_country][0]
         num_armies = move[from_country][1]
-
+        res = 0
         c_info = self.countries[from_country][1] # {pl_#: #_armies}
         defendingPlayer = self.countries[to_country][1].keys()[0]
 
@@ -146,6 +146,8 @@ class Risk:
                     self.gamePhase = 2
             else:
                 print "Phase One invalid move."
+                print "Move:" + str(move)
+                print  str(self)
                 return -1
             
         # Phase 2 - Attack from country; countries lose armies
@@ -226,6 +228,9 @@ class Risk:
                     
             else:
                 print "Phase Two invalid move."
+                print "Move:" + str(move)
+                print  str(self)
+                pdb.set_trace()
                 return -1
 
             # change game phase if attacker can't attack from any country anymore
@@ -261,6 +266,8 @@ class Risk:
                 self.players[self.playersMove].numArmiesPlacing = self.players[self.playersMove].GetNewArmies(self)
             else:
                 print "Phase Three invalid move"
+                print "Move:" + str(move)
+                print  str(self)
                 return -1
             # Phase 4: Put Armies on Conquered Country
         elif self.gamePhase == 4:
@@ -271,10 +278,14 @@ class Risk:
                 self.countries[to_country][1][player.playerNum] = num_armies # change ownership of country
                 player.occupiedCountries[to_country] = num_armies
                 player.occupiedCountries[from_country] = player.numArmiesPlacing - num_armies
+                if player.numArmiesPlacing - num_armies == 0:
+                    print "Phase 4 Invalid Move"
+                    print "Move:" + str(move)
+                    print  str(self)
                 self.countries[from_country][1][player.playerNum] = player.numArmiesPlacing - num_armies
                 self.players[defendingPlayer].occupiedCountries.pop(to_country) # def player doesn't have country anymore 
                 player.numArmiesPlacing = 0
-                
+        print "DoMove: Player " + str(player.playerNum) + "Defending Player: " + str(defendingPlayer) + " Phase: " + str(self.gamePhase)  + "move: " + str(move) + " result: " + str(res) + "\n"        
         return
 
     ###############################################
@@ -288,6 +299,7 @@ class Risk:
     #          each dictionary is a possible move
     #        
     ###############################################
+    #TODO:: prune moves returned to make less branches
     def GetMoves(self, player, stage, num_armies=0):
        # pdb.set_trace()
         moves = []
@@ -295,24 +307,29 @@ class Risk:
         if stage == 1:
             num_armies = player.numArmiesPlacing
             for c in player.occupiedCountries:
-                moves.extend({c:(c,x)} for x in range(1,num_armies + 1 -15,5))  # can put in groups of 5 if num_armies > 15
-                moves.extend({c:(c,x)} for x in range(1,16) if x <= num_armies)       # place in groups of 1 if num_armies < 15
+                moves.extend({c:(c,5*x)} for x in range(1,(num_armies-10)/5 + 1))  # can put in groups of 5 if num_armies > 10
+                moves.extend({c:(c,x)} for x in range(1,11 + ((num_armies-10)%5)) if x <= num_armies)       # place in groups of 1 if num_armies < 1
 
         # Attacking 
         elif stage == 2:
             for c in player.occupiedCountries:
                 for ct in self.countries[c][0]:
                     if not(ct in player.occupiedCountries) and player.occupiedCountries[c] > 1:
-                        moves.extend({c:(ct,x)} for x in range(1,4) if x <= self.countries[c][1][player.playerNum]-1)  # can attack from all occupied countries as long as 1 is left
+                        for x in range(1,4):
+                            if x < player.occupiedCountries[c]:
+                                moves.append({c:(ct,x)})   # can attack from all occupied countries as long as 1 is left
             moves.append({c:(c,-1)}) # flag for stopping an attack; 
 
 
         # Fortifying
         elif stage == 3:
+            num_armies = self.countries[c][1][player.playerNum]
             for c in player.occupiedCountries:
                 for cto in self.countries[c][0]:
                     if cto in player.occupiedCountries:
-                        moves.extend({c:(cto,x)} for x in range(0,self.countries[c][1][player.playerNum]))
+                        moves.extend({c:(cto,5*x)} for x in range(1,(num_armies-10)/5 + 1))  # can put in groups of 5 if num_armies > 10
+                        moves.extend({c:(cto,x)} for x in range(1,11 + ((num_armies-10)%5)) if x <= num_armies)       # place in groups of 1 if num_armies < 1
+
             if not(moves):
                 moves.append({player.occupiedCountries.keys()[0]:(player.occupiedCountries.keys()[0],0)}) # so we don't return something empty
 
@@ -329,6 +346,8 @@ class Risk:
                         conquered_country = c[0]
                         break
                 moves.extend({attack_country:(conquered_country,x)} for x in range(1,player.numArmiesPlacing)) 
+
+        print "GetMoves: Player: " + str(player.playerNum) + " Phase: " + str(self.gamePhase) + " (" + str(stage) + ") " + " Moves: " + str(moves) + " \n"
 
         return moves
     

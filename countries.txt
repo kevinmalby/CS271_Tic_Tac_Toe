@@ -10,7 +10,7 @@ North America:9
     Western United States-	  Eastern United States, Central America, Alberta, Ontario
 South America:4
     Argentina- Brazil, Peru
-    Brazil-    North Africa, Argentina, Peru, Venezuela, Argentina
+    Brazil-    North Africa, Argentina, Peru, Venezuela
     Peru-      Argentina, Brazil, Venezuela
     Venezuela- Central America, Brazil, Peru
 Europe:7
