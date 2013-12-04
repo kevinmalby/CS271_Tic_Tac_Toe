@@ -323,8 +323,8 @@ class Risk:
 
         # Fortifying
         elif stage == 3:
-            num_armies = self.countries[c][1][player.playerNum]
             for c in player.occupiedCountries:
+                num_armies = self.countries[c][1][player.playerNum]-1
                 for cto in self.countries[c][0]:
                     if cto in player.occupiedCountries:
                         moves.extend({c:(cto,5*x)} for x in range(1,(num_armies-10)/5 + 1))  # can put in groups of 5 if num_armies > 10
