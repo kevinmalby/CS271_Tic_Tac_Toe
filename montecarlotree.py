@@ -75,13 +75,13 @@ class MonteCarloMethod:
                 curNode = curNode.AddChild(move, curState)
 
             # Rollout - Randomly play games from this point until game finishes
-            while curState.GetMoves(curState.players[curState.playersMove],curState.gamePhase) != []:
+            while not(curState.GameOver()):
                 curState.DoRandomMove(curState.players[curState.playersMove])
 
             # Backpropogate - After the game is over, propogate the result of it (win/loss) through the expanded
             # nodes. Each node is updated with respect to which player won or lost
             while curNode != None:
-                curNode.Update(curState.CheckWinAndScore(curNode.playerJustMoved))
+                curNode.Update(curState.Score(curNode.playerJustMoved))
                 curNode = curNode.parentNode
         return sorted(rootnode.childNodes, key = lambda node: node.visits)[-1].move
 

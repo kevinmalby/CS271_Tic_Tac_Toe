@@ -15,7 +15,10 @@ class CompRiskPlayer(RiskPlayer):
         for item in self.continentsHeld.iteritems():
             totalNewArmies += item[1]
             
-        totalNewArmies += len(self.occupiedCountries) / 3
+        if len(self.occupiedCountries) / 3 > 3:
+            totalNewArmies += len(self.occupiedCountries) / 3
+        else:
+            totalNewArmies += 3
         totalNewArmies += self.UseCards(riskState)
 
         return totalNewArmies
@@ -46,6 +49,7 @@ class CompRiskPlayer(RiskPlayer):
             return 0
 
         maxOwnedCountries = 0
+        bestCards = validIndeces[0]
         for option in validIndeces:
             numCountries = 0
             for card in option:
@@ -117,6 +121,6 @@ class CompRiskPlayer(RiskPlayer):
     #
     ######################
     def MakeMove(self, riskstate):
-        pdb.set_trace()
-        move = self.myTree.TreeSearch(riskstate,50,False)
+        #pdb.set_trace()
+        move = self.myTree.TreeSearch(riskstate,100,False)
         return move

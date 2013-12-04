@@ -95,12 +95,25 @@ class Risk:
     def Clone(self):
         new_board = Risk("","",len(self.players))
         new_board.countries = copy.deepcopy(self.countries)
-        new_board.players = copy.deepcopy(self.players)
         new_board.map = self.map 
         new_board.playersMove = self.playersMove
         new_board.territoryCards = copy.deepcopy(self.territoryCards)
         new_board.tradeInPlaceholder = self.tradeInPlaceholder
         new_board.gamePhase = self.gamePhase
+        
+        for pl in self.players:
+            if isinstance(pl,CompRiskPlayer):
+                new_board.players.append(copy.deepcopy(pl))
+            else:
+                new_player = CompRiskPlayer(pl.playerNum, pl.playerColor)
+                new_player.occupiedCountries = copy.deepcopy(pl.occupiedCountries)
+                new_player.cards = copy.deepcopy(pl.cards)
+                new_player.continentsHeld = copy.deepcopy(pl.continentsHeld)
+                new_player.numArmiesPlacing = pl.numArmiesPlacing
+                new_player.conqueredTerritory = pl.conqueredTerritory
+                new_board.players.append(new_player)
+                
+                                      
         return new_board
     
     # Updates the game state with the move
@@ -140,8 +153,9 @@ class Risk:
             if num_armies == -1:
                 #flag to stop attacking
                 if player.conqueredTerritory == True:
-                    new_card = self.territoryCards.popitem()
-                    player.cards[new_card[0]] = new_card[1] # get a card
+                    if not(self.territoryCards):
+                        new_card = self.territoryCards.popitem()
+                        player.cards[new_card[0]] = new_card[1] # get a card
                 player.conqueredTerritory = False
                 self.gamePhase = 3
                 return
@@ -178,8 +192,6 @@ class Risk:
                         rollSum -= 1
                     else:
                         rollSum += 1
-                        
-                
                 res = rollSum
 
                 # Both players lose 1 army
@@ -217,16 +229,21 @@ class Risk:
                 return -1
 
             # change game phase if attacker can't attack from any country anymore
-            canAttack = False
-            for country, value in player.occupiedCountries.iteritems():
-                if value > 1:
-                    canAttack = True
-            if canAttack == False:
-                self.gamePhase = 3
+            if self.gamePhase != 4:
+                canAttack = False
+                for country, value in player.occupiedCountries.iteritems():
+                    if value > 1:
+                        canAttack = True
+                if canAttack == False:
+                    self.gamePhase = 3
         # Phase 3 - Fortify; countries add/lose armies
         elif self.gamePhase == 3:
             #pdb.set_trace()
-            if c_info[player.playerNum] -1 >= num_armies and to_country in self.countries[from_country][0] and to_country in player.occupiedCountries.keys():
+            if num_armies == 0: # Player only has one country
+                self.gamePhase = 1
+                self.playersMove = (self.playersMove  + 1) % len(self.players)
+                self.players[self.playersMove].numArmiesPlacing = self.players[self.playersMove].GetNewArmies(self)
+            elif c_info[player.playerNum] -1 >= num_armies and to_country in self.countries[from_country][0] and to_country in player.occupiedCountries.keys():
                 c_info[player.playerNum] -= num_armies
                 player.occupiedCountries[from_country] -= num_armies
                 self.countries[to_country][1][player.playerNum] += num_armies
@@ -235,7 +252,10 @@ class Risk:
                 self.playersMove = (player.playerNum + 1) % len(self.players)
 
                 # Get the number of armies to place for the next player
-                self.DrawMap()
+                # TODO:: Put DrawMap somewhere else
+                simulation = False
+                if simulation:
+                    self.DrawMap()
                 self.setContinentControl()
                 player = self.players[self.playersMove]
                 self.players[self.playersMove].numArmiesPlacing = self.players[self.playersMove].GetNewArmies(self)
@@ -269,6 +289,7 @@ class Risk:
     #        
     ###############################################
     def GetMoves(self, player, stage, num_armies=0):
+       # pdb.set_trace()
         moves = []
         # Placing Armies
         if stage == 1:
@@ -283,7 +304,7 @@ class Risk:
                 for ct in self.countries[c][0]:
                     if not(ct in player.occupiedCountries) and player.occupiedCountries[c] > 1:
                         moves.extend({c:(ct,x)} for x in range(1,4) if x <= self.countries[c][1][player.playerNum]-1)  # can attack from all occupied countries as long as 1 is left
-            moves.append({c:(c,-1)}) # flag for stopping an attack
+            moves.append({c:(c,-1)}) # flag for stopping an attack; 
 
 
         # Fortifying
@@ -291,7 +312,9 @@ class Risk:
             for c in player.occupiedCountries:
                 for cto in self.countries[c][0]:
                     if cto in player.occupiedCountries:
-                        moves.extend({c:(cto,x)} for x in range(1,self.countries[c][1][player.playerNum]))
+                        moves.extend({c:(cto,x)} for x in range(0,self.countries[c][1][player.playerNum]))
+            if not(moves):
+                moves.append({player.occupiedCountries.keys()[0]:(player.occupiedCountries.keys()[0],0)}) # so we don't return something empty
 
         # Picking # Armies to move to Conquered Country
         elif stage == 4:
@@ -315,7 +338,8 @@ class Risk:
     # to use draw map though             #
     ######################################
     def __repr__(self):
-        gameState = ''
+        gameState = 'Current Player: ' + str(self.playersMove)
+        gameState += '\nCurrent Phase: ' + str(self.gamePhase)
         for continent in self.map:
             gameState += '\n' + continent + '\n'
 
@@ -694,20 +718,37 @@ class Risk:
         return {fortifyFrom:(fortifyTo, fortifyCount)}
 
     ###############################################
-    # Checks whether the game is over, and if     #
-    # it is, then it will return 1 if the player  #
-    # who just moved won, or 0.0 if the player    #
-    # who just moved lost. Although I think it    #
-    # will always be the case that the player who # 
-    # just went is the player who won             #
+    # If the game is over, will return if this 
+    # was the player that won (1 if so, 0 if not)
+    # If the game isn't over, returns 1 if this
+    # was the player with the most countries 
+    # occupied and 0 if not.             
     ###############################################
-    def Score(self, playersMove):
-        if curPlayerNum == playersMove:
-            return 1.0
+    def Score(self, curPlayerNum, gameFinished = True):
+        if gameFinished:
+            if curPlayerNum == self.playersMove:
+                return 1.0
+            else:
+                return 0.0
         else:
-            return 0.0
-
-
+            most = (0,(self.players[0].occupiedCountries))
+            for x in range(1,len(self.players)):
+                if len(self.players[x]) > most[1]:
+                    most = (x,len(self.players[x]))
+            if curPlayerNum == most[0]:
+                return 1.0
+            else:
+                return 0.0
+        
+    # Returns whether this game is over
+    def GameOver(self):
+        owner = self.countries[self.countries.keys()[0]][1].keys()[0] 
+        for key, val in self.countries.iteritems():
+            if val[1].keys()[0] != owner:
+                return False
+        self.playersMove = owner
+        return True
+        
     #######################################
     # Function to determine in a player   #
     # has control of any continents       #

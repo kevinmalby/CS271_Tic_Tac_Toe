@@ -1,0 +1,12 @@
+North America:1
+    America- Brazil,Iceland,China
+South America:1
+    Brazil-America,Congo
+Europe:1
+   Iceland-China,America,Congo
+Africa:1
+    Congo-Iceland,Brazil
+Asia:1  
+   China-Iceland,America,Western Australia
+Australia:1
+   Western Australia-China
