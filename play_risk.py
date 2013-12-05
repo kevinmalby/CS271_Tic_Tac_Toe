@@ -1,47 +1,36 @@
 from Risk import Risk
-import random
+from montecarlotree import MonteCarloMethod
+import globalVals
 
 def main():
     riskState = Risk('countries.txt','territory_cards.txt', 4)
+    mcts = MonteCarloMethod()
 
     riskState.randomizeInitialState()
     riskState.playersMove = 0
     initPlayer = riskState.players[riskState.playersMove]
     riskState.setContinentControl()
-    
-
-    for i in range(0,7):
-        name = random.choice(riskState.territoryCards.keys())
-        val = riskState.territoryCards[name]
-        new_card = [name, val]
-        riskState.territoryCards.pop(new_card[0])
-        initPlayer.cards[new_card[0]] = new_card[1]
-
-    for i in range(0,7):
-        name = random.choice(riskState.territoryCards.keys())
-        val = riskState.territoryCards[name]
-        new_card = [name, val]
-        riskState.territoryCards.pop(new_card[0])
-        riskState.players[1].cards[new_card[0]] = new_card[1]
-
     numA = initPlayer.GetNewArmies(riskState)
     initPlayer.numArmiesPlacing = numA
 
-    while True:
+    while riskState.GameOver() == -1:
         curPlayer = riskState.players[riskState.playersMove]
-        riskState.DrawMap()
 
         if riskState.playersMove == 1:
             move = riskState.DoHumanMove(curPlayer)
-            print move
-            riskState.DoMove(move, curPlayer)
         elif riskState.playersMove == 0:
-            # move = riskState.DoHumanMove(curPlayer)
-            # print move
-            # riskState.DoMove(move, curPlayer)
-            # riskState.DoRandomMove(curPlayer)
+            move = mcts.TreeSearch(riskState, 30, False)
         else:
             pass
+
+        riskState.DoMove(move, curPlayer)
+
+    resultOfGame = riskState.Score(curPlayer, True)
+
+    if resultOfGame == 1.0:
+        print 'Player %d wins.' %(riskState.playersMove)
+    else:
+        print 'Player %d wins.' %((riskState.playersMove % globalVals.maxPlayers) + 1)
 
 if __name__ == "__main__":
     main()

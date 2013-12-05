@@ -110,6 +110,8 @@ class Risk:
                 new_player.cards = copy.deepcopy(pl.cards)
                 new_player.continentsHeld = copy.deepcopy(pl.continentsHeld)
                 new_player.numArmiesPlacing = pl.numArmiesPlacing
+                new_player.numAttacks = pl.numAttacks
+                new_player.maxArmiesLeft = pl.maxArmiesLeft
                 new_player.conqueredTerritory = pl.conqueredTerritory
                 new_board.players.append(new_player)
                 
@@ -131,27 +133,33 @@ class Risk:
 
         # Phase 1 - Place armies on country
         if self.gamePhase == 1 and player.numArmiesPlacing >= num_armies:
-            if c_info.has_key(player.playerNum):
-                c_info[player.playerNum] += num_armies
-                player.occupiedCountries[to_country] += num_armies
-                player.numArmiesPlacing -= num_armies
-                if player.numArmiesPlacing == 0:
-                    self.gamePhase = 2
-            elif c_info.has_key(-1):
-                c_info.clear()
-                c_info[player.playerNum] = num_armies
-                player.numArmiesPlacing -= num_armies
-                player.occupiedCountries[to_country] = num_armies
-                if player.numArmiesPlacing == 0:
-                    self.gamePhase = 2
+            if num_armies == -1:
+                self.gamePhase = 2
             else:
-                print "Phase One invalid move."
-                print "Move:" + str(move)
-                print  str(self)
-                return -1
+                if c_info.has_key(player.playerNum):
+                    if player.maxArmiesLeft >= num_armies:
+                        player.maxArmiesLeft -= num_armies
+                    c_info[player.playerNum] += num_armies
+                    player.occupiedCountries[to_country] += num_armies
+                    player.numArmiesPlacing -= num_armies
+                    if player.numArmiesPlacing == 0:
+                        self.gamePhase = 2
+                elif c_info.has_key(-1):
+                    c_info.clear()
+                    c_info[player.playerNum] = num_armies
+                    player.numArmiesPlacing -= num_armies
+                    player.occupiedCountries[to_country] = num_armies
+                    if player.numArmiesPlacing == 0:
+                        self.gamePhase = 2
+                else:
+                    print "Phase One invalid move."
+                    print "Move:" + str(move)
+                    print  str(self)
+                    return -1
             
         # Phase 2 - Attack from country; countries lose armies
         elif self.gamePhase == 2:
+            player.numAttacks += 1
             if num_armies == -1:
                 #flag to stop attacking
                 if player.conqueredTerritory == True:
@@ -200,9 +208,13 @@ class Risk:
                 if res == 0:
                     c_info[player.playerNum] -= 1
                     player.occupiedCountries[from_country] -= 1
+                    if player.maxArmiesLeft < 200:
+                        player.maxArmiesLeft += 1
                     fromc_info = self.countries[to_country][1] 
                     fromc_info[defendingPlayer] -= 1
                     self.players[defendingPlayer].occupiedCountries[to_country] -= 1
+                    if self.players[defendingPlayer].maxArmiesLeft < 200:
+                        self.players[defendingPlayer].maxArmiesLeft += 1
                     # Check if country conquered
                     if fromc_info[defendingPlayer] == 0:
                         player.conqueredTerritory = True
@@ -211,6 +223,8 @@ class Risk:
                         player.occupiedCountries[from_country] = 0 # set as flag as the attacking country
                 # Attacker Loses Armies
                 elif res < 0:
+                    if player.maxArmiesLeft < 200 + res:
+                        player.maxArmiesLeft -= res
                     c_info[player.playerNum] += res
                     player.occupiedCountries[from_country] += res
                 # Victim loses armies
@@ -219,6 +233,8 @@ class Risk:
                     fromc_info = self.countries[to_country][1] 
                     fromc_info[defendingPlayer] -= res
                     self.players[defendingPlayer].occupiedCountries[to_country] -= res
+                    if self.players[defendingPlayer].maxArmiesLeft < 200 - res:
+                        self.players[defendingPlayer].maxArmiesLeft += res
                 #country conquered
                     if fromc_info[defendingPlayer] == 0:
                         player.conqueredTerritory = True
@@ -242,6 +258,7 @@ class Risk:
                     self.gamePhase = 3
         # Phase 3 - Fortify; countries add/lose armies
         elif self.gamePhase == 3:
+            player.numAttacks = 0
             #pdb.set_trace()
             if num_armies == 0: # Player only has one country
                 self.gamePhase = 1
@@ -304,12 +321,16 @@ class Risk:
         moves = []
         # Placing Armies
         if stage == 1:
-            num_armies = player.numArmiesPlacing
-            for c in player.occupiedCountries:
-                moves.extend({c:(c,5*x)} for x in range(1,(num_armies-10)/5 + 1))  # can put in groups of 5 if num_armies > 10
-                moves.extend({c:(c,x)} for x in range(1,11 + ((num_armies-10)%5)) if x <= num_armies)       # place in groups of 1 if num_armies < 1
+            availableArmies = min(player.numArmiesPlacing, player.maxArmiesLeft)
+            if availableArmies != 0:
+                num_armies = availableArmies
+                for c in player.occupiedCountries:
+                    moves.extend({c:(c,5*x)} for x in range(1,(num_armies-10)/5 + 1)) # can put in groups of 5 if num_armies > 10
+                    moves.extend({c:(c,x)} for x in range(1,11 + ((num_armies-10)%5)) if x <= num_armies) # place in groups of 1 if num_armies < 1
+            else:
+                moves.append({'Alaska':('Alaska', -1)})
 
-        # Attacking 
+        # Attacking
         elif stage == 2:
             for c in player.occupiedCountries:
                 for ct in self.countries[c][0]:
@@ -319,10 +340,11 @@ class Risk:
                         else:
                             for x in range(1,4):
                                 if x < player.occupiedCountries[c]:
-                                    moves.append({c:(ct,x)})   # can attack from all occupied countries as long as 1 is left
+                                    moves.append({c:(ct,x)}) # can attack from all occupied countries as long as 1 is left
 
-            if len(moves) < 10:
-                moves.append({c:(c,-1)}) # flag for stopping an attack; 
+            # if len(moves) < 10:
+            #if moves == [] or player.numAttacks > 2:
+            moves.append({c:(c,-1)}) # flag for stopping an attack;
 
 
         # Fortifying
@@ -331,8 +353,8 @@ class Risk:
                 num_armies = min(self.countries[c][1][player.playerNum]-1,10)
                 for cto in self.countries[c][0]:
                     if cto in player.occupiedCountries:
-                       # moves.extend({c:(cto,5*x)} for x in range(1,(num_armies-10)/5 + 1))  # can put in groups of 5 if num_armies > 10
-                        # moves.extend({c:(cto,x)} for x in range(1,11 + ((num_armies-10)%5)) if x <= num_armies)      
+                       # moves.extend({c:(cto,5*x)} for x in range(1,(num_armies-10)/5 + 1)) # can put in groups of 5 if num_armies > 10
+                        # moves.extend({c:(cto,x)} for x in range(1,11 + ((num_armies-10)%5)) if x <= num_armies)
                         moves.extend({c:(cto,x)} for x in range(0,num_armies))
 
             if not(moves):
@@ -351,7 +373,7 @@ class Risk:
                     if 0 in c[1][1].values():
                         conquered_country = c[0]
                         break
-                moves.extend({attack_country:(conquered_country,x)} for x in range(min_armies,player.numArmiesPlacing)) 
+                moves.extend({attack_country:(conquered_country,x)} for x in range(min_armies,player.numArmiesPlacing))
 
  #       print "GetMoves: Player: " + str(player.playerNum) + " Phase: " + str(self.gamePhase) + " (" + str(stage) + ") " + " Moves: " + str(moves) + " \n"
 
@@ -775,6 +797,9 @@ class Risk:
     def GameOver(self, allowTie = True):
         numCountries = len(self.countries)
         mostOfBoard = round(numCountries*.90) # % of the countries
+        playerCounts = [0,0,0,0,0,0]
+
+        i = 0
         for p in self.players:
             curNum = len(p.occupiedCountries)
             if curNum == numCountries:
@@ -782,6 +807,16 @@ class Risk:
                 return 1
             if  allowTie and curNum >= mostOfBoard:
                 self.playersMove = p.playerNum
+                return 0
+
+            # Compute if one player has 15x the armies of another
+            for countries, armies in p.occupiedCountries.iteritems():
+                playerCounts[i] += armies
+            i += 1
+
+        maxA = max(playerCounts)
+        for i in range(0, len(self.players)):
+            if (maxA / playerCounts[i]) > 9:
                 return 0
         return -1
     #######################################
@@ -830,6 +865,9 @@ class Risk:
 
         self.players.append(CompRiskPlayer(0, globalVals.red))
         self.players.append(RiskPlayer(1, globalVals.blue))
+
+        for p in self.players:
+            p.maxArmiesLeft -= armiesToPlaceEach
         
 
         numEmptyCountries = len(self.countries)

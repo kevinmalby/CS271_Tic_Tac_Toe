@@ -73,6 +73,7 @@ class CompRiskPlayer(RiskPlayer):
                 curCountry = riskState.countries[country]
                 curCountry[1][self.playerNum] += 2
                 self.occupiedCountries[country] += 2
+                self.maxArmiesLeft -= 2
 
             # Remove the card from the players hand because it has been used
             del self.cards[country]
