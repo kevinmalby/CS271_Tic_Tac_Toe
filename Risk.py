@@ -299,7 +299,7 @@ class Risk:
                 self.countries[from_country][1][player.playerNum] = player.numArmiesPlacing - num_armies
                 self.players[defendingPlayer].occupiedCountries.pop(to_country) # def player doesn't have country anymore 
                 player.numArmiesPlacing = 0
-        print "DoMove: Player " + str(player.playerNum) + "Defending Player: " + str(defendingPlayer) + " Phase: " + str(self.gamePhase)  + "move: " + str(move) + " result: " + str(res) + "\n"        
+        #print "DoMove: Player " + str(player.playerNum) + "Defending Player: " + str(defendingPlayer) + " Phase: " + str(self.gamePhase)  + "move: " + str(move) + " result: " + str(res) + "\n"        
         return
 
     ###############################################
