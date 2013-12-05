@@ -49,6 +49,7 @@ class MonteCarloMethod:
         size = width, height = 1640, 1024
 
         for i in range(numIterations):
+            print i
             curNode = rootnode
             curState = rootstate.Clone()
 

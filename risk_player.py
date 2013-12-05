@@ -8,6 +8,8 @@ class RiskPlayer:
         self.continentsHeld = {}
         self.numArmiesPlacing = 0
         self.conqueredTerritory = False
+        self.numAttacks = 0
+        self.maxArmiesLeft = 200
 
     def GetNewArmies(self, riskState):
         totalNewArmies = 0
@@ -93,6 +95,7 @@ class RiskPlayer:
                 curCountry = riskState.countries[country]
                 curCountry[1][self.playerNum] += 2
                 self.occupiedCountries[country] += 2
+                self.maxArmiesLeft -= 2
 
             # Remove the card from the players hand because it has been used
             del self.cards[country]
