@@ -112,8 +112,6 @@ class Risk:
                 new_player.numArmiesPlacing = pl.numArmiesPlacing
                 new_player.conqueredTerritory = pl.conqueredTerritory
                 new_board.players.append(new_player)
-                
-                                      
         return new_board
     
     # Updates the game state with the move
@@ -284,7 +282,7 @@ class Risk:
                 self.countries[from_country][1][player.playerNum] = player.numArmiesPlacing - num_armies
                 self.players[defendingPlayer].occupiedCountries.pop(to_country) # def player doesn't have country anymore 
                 player.numArmiesPlacing = 0
-       # print "DoMove: Player " + str(player.playerNum) + "Defending Player: " + str(defendingPlayer) + " Phase: " + str(self.gamePhase)  + "move: " + str(move) + " result: " + str(res) + "\n"        
+        print "DoMove: Player " + str(player.playerNum) + "Defending Player: " + str(defendingPlayer) + " Phase: " + str(self.gamePhase)  + "move: " + str(move) + " result: " + str(res) + "\n"        
         return
 
     ###############################################
@@ -772,7 +770,7 @@ class Risk:
     # Returns 1 if whole board owned by someone; 
     # Returns 0 if someone owns >= % of board
     # Returns -1 if game not over
-    def GameOver(self, allowTie = True):
+    def GameOver(self, allowTie = False):
         numCountries = len(self.countries)
         mostOfBoard = round(numCountries*.90) # % of the countries
         for p in self.players:
