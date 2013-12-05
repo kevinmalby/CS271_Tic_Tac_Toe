@@ -224,8 +224,7 @@ class Risk:
                         player.conqueredTerritory = True
                         self.gamePhase = 4
                         player.numArmiesPlacing = player.occupiedCountries[from_country] # num armies that can be moved +1 (since using range() in GetMoves()
-                        player.occupiedCountries[from_country] = 0 # set as flag as the attacking country
-                    
+                        player.occupiedCountries[from_country] = -num_armies # set as flag as the attacking country
             else:
                 print "Phase Two invalid move."
                 print "Move:" + str(move)
@@ -285,7 +284,7 @@ class Risk:
                 self.countries[from_country][1][player.playerNum] = player.numArmiesPlacing - num_armies
                 self.players[defendingPlayer].occupiedCountries.pop(to_country) # def player doesn't have country anymore 
                 player.numArmiesPlacing = 0
-        print "DoMove: Player " + str(player.playerNum) + "Defending Player: " + str(defendingPlayer) + " Phase: " + str(self.gamePhase)  + "move: " + str(move) + " result: " + str(res) + "\n"        
+       # print "DoMove: Player " + str(player.playerNum) + "Defending Player: " + str(defendingPlayer) + " Phase: " + str(self.gamePhase)  + "move: " + str(move) + " result: " + str(res) + "\n"        
         return
 
     ###############################################
@@ -315,20 +314,26 @@ class Risk:
             for c in player.occupiedCountries:
                 for ct in self.countries[c][0]:
                     if not(ct in player.occupiedCountries) and player.occupiedCountries[c] > 1:
-                        for x in range(1,4):
-                            if x < player.occupiedCountries[c]:
-                                moves.append({c:(ct,x)})   # can attack from all occupied countries as long as 1 is left
-            moves.append({c:(c,-1)}) # flag for stopping an attack; 
+                        if player.occupiedCountries[c] > 9:
+                            moves.append({c:(ct,3)})
+                        else:
+                            for x in range(1,4):
+                                if x < player.occupiedCountries[c]:
+                                    moves.append({c:(ct,x)})   # can attack from all occupied countries as long as 1 is left
+
+            if len(moves) < 10:
+                moves.append({c:(c,-1)}) # flag for stopping an attack; 
 
 
         # Fortifying
         elif stage == 3:
             for c in player.occupiedCountries:
-                num_armies = self.countries[c][1][player.playerNum]-1
+                num_armies = min(self.countries[c][1][player.playerNum]-1,10)
                 for cto in self.countries[c][0]:
                     if cto in player.occupiedCountries:
-                        moves.extend({c:(cto,5*x)} for x in range(1,(num_armies-10)/5 + 1))  # can put in groups of 5 if num_armies > 10
-                        moves.extend({c:(cto,x)} for x in range(1,11 + ((num_armies-10)%5)) if x <= num_armies)       # place in groups of 1 if num_armies < 1
+                       # moves.extend({c:(cto,5*x)} for x in range(1,(num_armies-10)/5 + 1))  # can put in groups of 5 if num_armies > 10
+                        # moves.extend({c:(cto,x)} for x in range(1,11 + ((num_armies-10)%5)) if x <= num_armies)      
+                        moves.extend({c:(cto,x)} for x in range(0,num_armies))
 
             if not(moves):
                 moves.append({player.occupiedCountries.keys()[0]:(player.occupiedCountries.keys()[0],0)}) # so we don't return something empty
@@ -338,16 +343,17 @@ class Risk:
             # player = player who conquered a territory
             if player.conqueredTerritory:
                 for c in player.occupiedCountries.items():
-                    if c[1] == 0:
+                    if c[1] < 0:
                         attack_country = c[0]
+                        min_armies = c[1]*-1;
                         break
                 for c in self.countries.items():
                     if 0 in c[1][1].values():
                         conquered_country = c[0]
                         break
-                moves.extend({attack_country:(conquered_country,x)} for x in range(1,player.numArmiesPlacing)) 
+                moves.extend({attack_country:(conquered_country,x)} for x in range(min_armies,player.numArmiesPlacing)) 
 
-        print "GetMoves: Player: " + str(player.playerNum) + " Phase: " + str(self.gamePhase) + " (" + str(stage) + ") " + " Moves: " + str(moves) + " \n"
+ #       print "GetMoves: Player: " + str(player.playerNum) + " Phase: " + str(self.gamePhase) + " (" + str(stage) + ") " + " Moves: " + str(moves) + " \n"
 
         return moves
     
@@ -759,15 +765,25 @@ class Risk:
             else:
                 return 0.0
         
-    # Returns whether this game is over
-    def GameOver(self):
-        owner = self.countries[self.countries.keys()[0]][1].keys()[0] 
-        for key, val in self.countries.iteritems():
-            if val[1].keys()[0] != owner:
-                return False
-        self.playersMove = owner
-        return True
-        
+    # Returns whether this game is over and sets 
+    # self.playersMove to winning player number
+    # params: allowTie: if true, will set playersMove to
+            # player's num w/ majority of board
+    # Returns 1 if whole board owned by someone; 
+    # Returns 0 if someone owns >= % of board
+    # Returns -1 if game not over
+    def GameOver(self, allowTie = True):
+        numCountries = len(self.countries)
+        mostOfBoard = round(numCountries*.90) # % of the countries
+        for p in self.players:
+            curNum = len(p.occupiedCountries)
+            if curNum == numCountries:
+                self.playersMove = p.playerNum
+                return 1
+            if  allowTie and curNum >= mostOfBoard:
+                self.playersMove = p.playerNum
+                return 0
+        return -1
     #######################################
     # Function to determine in a player   #
     # has control of any continents       #

@@ -19,7 +19,8 @@ class CompRiskPlayer(RiskPlayer):
             totalNewArmies += len(self.occupiedCountries) / 3
         else:
             totalNewArmies += 3
-        totalNewArmies += self.UseCards(riskState)
+        if len(self.cards) > 5:
+            totalNewArmies += self.UseCards(riskState)
 
         return totalNewArmies
 
@@ -122,5 +123,5 @@ class CompRiskPlayer(RiskPlayer):
     ######################
     def MakeMove(self, riskstate):
         #pdb.set_trace()
-        move = self.myTree.TreeSearch(riskstate,100,False)
+        move = self.myTree.TreeSearch(riskstate,25,False)
         return move

@@ -75,7 +75,7 @@ class MonteCarloMethod:
                 curNode = curNode.AddChild(move, curState)
 
             # Rollout - Randomly play games from this point until game finishes
-            while not(curState.GameOver()):
+            while curState.GameOver(True) == -1:
                 curState.DoRandomMove(curState.players[curState.playersMove])
 
             # Backpropogate - After the game is over, propogate the result of it (win/loss) through the expanded
