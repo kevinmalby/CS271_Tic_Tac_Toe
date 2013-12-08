@@ -122,7 +122,7 @@ class CompRiskPlayer(RiskPlayer):
     #
     #
     ######################
-    def MakeMove(self, riskstate):
+    def MakeMove(self, riskstate,numSims = 25, maxDepth = 5000):
         #pdb.set_trace()
         move = self.myTree.TreeSearch(riskstate,25,False)
         return move

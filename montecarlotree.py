@@ -11,8 +11,10 @@ class Node:
         self.wins = 0
         self.visits = 0
         self.untriedMoves = state.GetMoves(state.players[state.playersMove],state.gamePhase)
+       # print "UntriedMoves %s\n"%(self.untriedMoves)
        # self.playerJustMoved = state.playerJustMoved
         self.playerJustMoved = state.playersMove
+        self.st = state.Clone()
 
     def SelectChild(self):
         s = sorted(self.childNodes, key = lambda child: child.wins/child.visits + sqrt(2*log(self.visits)/child.visits))
@@ -40,18 +42,21 @@ class Node:
         self.wins += result
 
     def __repr__(self):
-        return "Node"
+        return "Node: Player: %s Move: %s Wins: %d Visits: %d\n UntriedMoves: %s\n\n "%(self.playerJustMoved, self.move, self.wins, self.visits, self.untriedMoves)
 
 class MonteCarloMethod:
     
-    def TreeSearch(self, rootstate, numIterations, drawtree = False):
+    def TreeSearch(self, rootstate, numIterations, drawtree = False, numRandMoves = 10000000):
         rootnode = Node(None, None, rootstate)
         size = width, height = 1640, 1024
 
+      
         for i in range(numIterations):
             print i
             curNode = rootnode
             curState = rootstate.Clone()
+            #print "Root: %s\n"%(curNode)
+            #print "Root state: %-8s\n"%(curNode.st)
 
             if (drawtree == True):
                 print 'New Screen: ' + str(i)
@@ -67,18 +72,26 @@ class MonteCarloMethod:
             # UCB1 Formula ( CurrentNodeWinRatio + Sqrt(2*log(TotalSimulations)/VisitsAtThisNode) )
             while curNode.untriedMoves == [] and curNode.childNodes != []:
                 curNode = curNode.SelectChild()
-                curState.DoMove(curNode.move, curState.players[curState.playersMove])
+             #   print "Chosen Child: %s\n"%(curNode)
+                #curState.DoMove(curNode.move, curState.players[curState.playersMove])
+                curState = curNode.st.Clone()
+              #  print "New State: %s\n"%(curState)
 
             # Expand - If there are still moves to try, select one at random and expand the node with that move
             if curNode.untriedMoves != []:
                 move = random.choice(curNode.untriedMoves)
+               # print "\tMove: %s"%(move)
                 curState.DoMove(move,curState.players[curState.playersMove])
+                #print "\tNew State"%(curState)
                 curNode = curNode.AddChild(move, curState)
 
             # Rollout - Randomly play games from this point until game finishes
-            while curState.GameOver(True) == -1:
+            cnt = 0
+            while curState.GameOver(True) == -1 and cnt < numRandMoves:
                 curState.DoRandomMove(curState.players[curState.playersMove])
+                cnt += 1
 
+#            print "Final State: %s\n\n\n"%(curState)
             # Backpropogate - After the game is over, propogate the result of it (win/loss) through the expanded
             # nodes. Each node is updated with respect to which player won or lost
             while curNode != None:

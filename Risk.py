@@ -122,6 +122,10 @@ class Risk:
     #         phase: which phase of the move (1,2,3)
     #
     def DoMove(self, move, player):
+        #print "DoMove: Player %d Move: %s\n"%(player.playerNum, move)
+        if move == []:
+            self.NextPlayer(player)
+        debugState = self.gamePhase
         from_country = move.keys()[0]
         to_country = move[from_country][0]
         num_armies = move[from_country][1]
@@ -154,6 +158,7 @@ class Risk:
                     print "Move:" + str(move)
                     print  str(self)
                     return -1
+            
             
         # Phase 2 - Attack from country; countries lose armies
         elif self.gamePhase == 2:
@@ -204,8 +209,8 @@ class Risk:
 
                 # Both players lose 1 army
                 if res == 0:
-                    c_info[player.playerNum] -= 1
                     player.occupiedCountries[from_country] -= 1
+                    c_info[player.playerNum] -= 1
                     if player.maxArmiesLeft < 200:
                         player.maxArmiesLeft += 1
                     fromc_info = self.countries[to_country][1] 
@@ -218,7 +223,7 @@ class Risk:
                         player.conqueredTerritory = True
                         self.gamePhase = 4
                         player.numArmiesPlacing = player.occupiedCountries[from_country] # num armies that can be moved +1 (since using range() in GetMoves()
-                        player.occupiedCountries[from_country] = 0 # set as flag as the attacking country
+                        player.occupiedCountries[from_country] = -num_armies # set as flag as the attacking country
                 # Attacker Loses Armies
                 elif res < 0:
                     if player.maxArmiesLeft < 200 + res:
@@ -243,7 +248,7 @@ class Risk:
                 print "Phase Two invalid move."
                 print "Move:" + str(move)
                 print  str(self)
-                pdb.set_trace()
+               #pdb.set_trace()
                 return -1
 
             # change game phase if attacker can't attack from any country anymore
@@ -260,48 +265,71 @@ class Risk:
             #pdb.set_trace()
             if num_armies == 0: # Player only has one country
                 self.gamePhase = 1
-                self.playersMove = (self.playersMove  + 1) % len(self.players)
-                self.players[self.playersMove].numArmiesPlacing = self.players[self.playersMove].GetNewArmies(self)
+                self.NextPlayer(player)
+                
             elif c_info[player.playerNum] -1 >= num_armies and to_country in self.countries[from_country][0] and to_country in player.occupiedCountries.keys():
                 c_info[player.playerNum] -= num_armies
                 player.occupiedCountries[from_country] -= num_armies
                 self.countries[to_country][1][player.playerNum] += num_armies
                 player.occupiedCountries[to_country] += num_armies
                 self.gamePhase = 1
-                self.playersMove = (player.playerNum + 1) % len(self.players)
-
-                # Get the number of armies to place for the next player
-                # TODO:: Put DrawMap somewhere else
-                simulation = False
-                if simulation:
-                    self.DrawMap()
+                self.NextPlayer(player)
                 self.setContinentControl()
-                player = self.players[self.playersMove]
-                self.players[self.playersMove].numArmiesPlacing = self.players[self.playersMove].GetNewArmies(self)
             else:
                 print "Phase Three invalid move"
                 print "Move:" + str(move)
                 print  str(self)
                 return -1
-            # Phase 4: Put Armies on Conquered Country
+        # Phase 4: Put Armies on Conquered Country
         elif self.gamePhase == 4:
-                defendingPlayer = self.countries[to_country][1].keys()[0]
-                self.gamePhase = 2;
-
-                self.countries[to_country][1].clear()
-                self.countries[to_country][1][player.playerNum] = num_armies # change ownership of country
-                player.occupiedCountries[to_country] = num_armies
-                player.occupiedCountries[from_country] = player.numArmiesPlacing - num_armies
-                if player.numArmiesPlacing - num_armies == 0:
-                    print "Phase 4 Invalid Move"
-                    print "Move:" + str(move)
-                    print  str(self)
-                self.countries[from_country][1][player.playerNum] = player.numArmiesPlacing - num_armies
-                self.players[defendingPlayer].occupiedCountries.pop(to_country) # def player doesn't have country anymore 
-                player.numArmiesPlacing = 0
+           # pdb.set_trace()
+            self.gamePhase = 2;
+            self.countries[to_country][1].clear()
+            self.countries[to_country][1][player.playerNum] = num_armies # change ownership of country
+            player.occupiedCountries[to_country] = num_armies
+            player.occupiedCountries[from_country] = player.numArmiesPlacing - num_armies
+            self.countries[from_country][1][player.playerNum] = player.numArmiesPlacing - num_armies
+            self.players[defendingPlayer].occupiedCountries.pop(to_country) # def player doesn't have country anymore 
+            player.numArmiesPlacing = 0
         #print "DoMove: Player " + str(player.playerNum) + "Defending Player: " + str(defendingPlayer) + " Phase: " + str(self.gamePhase)  + "move: " + str(move) + " result: " + str(res) + "\n"        
+        if self.countries[to_country][1].items()[0][1] < 0 or self.countries[from_country][1].items()[0][1] < 0:
+            print "Countries has something less than 0\n"
+            pdb.set_trace()
+        if to_country in player.occupiedCountries:
+            if player.occupiedCountries[to_country] < 0:
+                print "Player has something less than 0\n"
+                pdb.set_trace()
+        if to_country in self.players[defendingPlayer].occupiedCountries:
+            if self.players[defendingPlayer].occupiedCountries[to_country] < 0:
+                print "player has something less than 0\n"
+                pdb.set_trace()
+        if from_country in player.occupiedCountries:
+            if player.occupiedCountries[from_country] < 0 and self.gamePhase != 4:
+                print "player has something less than 0\n"
+                pdb.set_trace()
+        if from_country in self.players[defendingPlayer].occupiedCountries:
+             if self.players[defendingPlayer].occupiedCountries[from_country] < 0:
+                print "player has something less than 0\n"
+                pdb.set_trace()
+        for p in self.players:
+            if len(p.occupiedCountries) == 0 and p.playerNum == self.playersMove:
+                print "Empty Players"
+                pdb.set_trace()
+                
         return
 
+    #######################
+    # Changes the player to the next player
+    # that can play ( has countries)
+    # 
+    # does NOT change game phase
+    ############################
+    def NextPlayer(self, currPlayer):
+        self.playersMove = (self.playersMove  + 1) % len(self.players)
+        while len(self.players[self.playersMove].occupiedCountries) == 0:
+            self.playersMove = (self.playersMove  + 1) % len(self.players)
+            
+        self.players[self.playersMove].numArmiesPlacing = self.players[self.playersMove].GetNewArmies(self)
     ###############################################
     # Returns a list of possible moves based on the state passed in
     # Params:  stage   What stage of the move to get moves for
@@ -315,6 +343,7 @@ class Risk:
     ###############################################
     #TODO:: prune moves returned to make less branches
     def GetMoves(self, player, stage, num_armies=0):
+       # print "GetMoves Player %d"%(player.playerNum)
        # pdb.set_trace()
         moves = []
         # Placing Armies
@@ -323,8 +352,8 @@ class Risk:
             if availableArmies != 0:
                 num_armies = availableArmies
                 for c in player.occupiedCountries:
-                    moves.extend({c:(c,5*x)} for x in range(1,(num_armies-10)/5 + 1)) # can put in groups of 5 if num_armies > 10
-                    moves.extend({c:(c,x)} for x in range(1,11 + ((num_armies-10)%5)) if x <= num_armies) # place in groups of 1 if num_armies < 1
+                    moves.extend({c:(c,5*x)} for x in range(1,(num_armies-5)/5 + 1)) # can put in groups of 5 if num_armies > 10
+                    moves.extend({c:(c,x)} for x in range(1,11 + ((num_armies-5)%5)) if x <= num_armies) # place in groups of 1 if num_armies < 1
             else:
                 moves.append({'Alaska':('Alaska', -1)})
 
@@ -340,7 +369,6 @@ class Risk:
                                 if x < player.occupiedCountries[c]:
                                     moves.append({c:(ct,x)}) # can attack from all occupied countries as long as 1 is left
 
-            # if len(moves) < 10:
             #if moves == [] or player.numAttacks > 2:
             moves.append({c:(c,-1)}) # flag for stopping an attack;
 
@@ -351,10 +379,9 @@ class Risk:
                 num_armies = min(self.countries[c][1][player.playerNum]-1,10)
                 for cto in self.countries[c][0]:
                     if cto in player.occupiedCountries:
-                       # moves.extend({c:(cto,5*x)} for x in range(1,(num_armies-10)/5 + 1)) # can put in groups of 5 if num_armies > 10
-                        # moves.extend({c:(cto,x)} for x in range(1,11 + ((num_armies-10)%5)) if x <= num_armies)
+                        #                        moves.extend({c:(cto,x)} for x in range(0,num_armies))
                         moves.extend({c:(cto,x)} for x in range(0,num_armies))
-
+                                     
             if not(moves):
                 moves.append({player.occupiedCountries.keys()[0]:(player.occupiedCountries.keys()[0],0)}) # so we don't return something empty
 
@@ -374,8 +401,18 @@ class Risk:
                 moves.extend({attack_country:(conquered_country,x)} for x in range(min_armies,player.numArmiesPlacing))
 
  #       print "GetMoves: Player: " + str(player.playerNum) + " Phase: " + str(self.gamePhase) + " (" + str(stage) + ") " + " Moves: " + str(moves) + " \n"
-
+        if self.ValidateMoves(moves,player,stage) == -1 or moves == []:
+            print "Invalid GetMoves: Current Player: %d Phase: %d\n"%(player.playerNum, stage)
+            #pdb.set_trace()
         return moves
+
+    def ValidateMoves(self, moves, player,stage):
+        for m in moves:
+            if stage == 2:
+                if m.items()[0][1][1] != -1:
+                    if player.occupiedCountries[m.keys()[0]] == 1:
+                        print m
+                        return -1
     
     ######################################
     # Function that prints the current   #
@@ -387,9 +424,8 @@ class Risk:
         gameState += '\nCurrent Phase: ' + str(self.gamePhase)
         for continent in self.map:
             gameState += '\n' + continent + '\n'
-
+            
             for country in self.map[continent]:
-
                 curCountry = self.countries[country]
                 playerArmies = curCountry[1]
                 gameState += country + ': [ ' + str(playerArmies) + ' ]\n'
@@ -398,10 +434,16 @@ class Risk:
     
     # Do a random computer move    
     def DoRandomMove(self, player):
+        #print "DoRandomMove\n"
+        if len(player.occupiedCountries) == 0:
+            self.NextPlayer(player)
+            self.gamePhase = 1
+            return
         choice = random.choice(self.GetMoves(player, self.gamePhase, player.numArmiesPlacing))
         self.DoMove(choice, player)
        
 
+    
     ################################################
     # Do a move as a human, depends on the         #
     # phase of the game set by DoMove. Returns a   #
@@ -793,11 +835,11 @@ class Risk:
     # Returns 0 if someone owns >= % of board
     # Returns -1 if game not over
     def GameOver(self, allowTie = False):
+        #print "GameOver"
         numCountries = len(self.countries)
         mostOfBoard = round(numCountries*.90) # % of the countries
-        playerCounts = [0,0,0,0,0,0]
+        playerCounts = [0.0 for x in range(0,len(self.players))]
 
-        i = 0
         for p in self.players:
             curNum = len(p.occupiedCountries)
             if curNum == numCountries:
@@ -809,13 +851,14 @@ class Risk:
 
             # Compute if one player has 15x the armies of another
             for countries, armies in p.occupiedCountries.iteritems():
-                playerCounts[i] += armies
-            i += 1
+                playerCounts[p.playerNum] += abs(armies)
+            
 
         maxA = max(playerCounts)
         for i in range(0, len(self.players)):
-            if (maxA / playerCounts[i]) > 9:
-                return 0
+            if playerCounts[i] != 0:
+                if (maxA / playerCounts[i]) > 9:
+                    return 0
         return -1
     #######################################
     # Function to determine in a player   #
@@ -858,11 +901,16 @@ class Risk:
     # Initializes the game to random placements #
     # that depend on the number of players      #
     #############################################
-    def randomizeInitialState(self):
-        armiesToPlaceEach = 40-((globalVals.maxPlayers-2)*5)
+    def randomizeInitialState(self, numHumanPl, numCompPl):
+        if numHumanPl + numCompPl > 6:
+            return 
+        colors = ['red','green','blue','yellow','black','white']
+        armiesToPlaceEach = 40-((numHumanPl+numCompPl)*5)
 
-        self.players.append(CompRiskPlayer(0, globalVals.red))
-        self.players.append(RiskPlayer(1, globalVals.blue))
+        for i in range(int(numHumanPl)):
+            self.players.append(RiskPlayer(i,colors[i]))
+        for i in range(int(numCompPl)):
+            self.players.append(CompRiskPlayer(numHumanPl+i,colors[i+numHumanPl]))
 
         for p in self.players:
             p.maxArmiesLeft -= armiesToPlaceEach
@@ -871,7 +919,7 @@ class Risk:
         numEmptyCountries = len(self.countries)
         while armiesToPlaceEach > 0:
 
-            for i in range(globalVals.maxPlayers):
+            for i in range(numHumanPl + numCompPl):
 
                 if numEmptyCountries > 0:
                     while True:

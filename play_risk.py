@@ -6,7 +6,9 @@ def main():
     riskState = Risk('countries.txt','territory_cards.txt', 4)
     mcts = MonteCarloMethod()
 
-    riskState.randomizeInitialState()
+    numHum = 2
+    numComp = 2
+    riskState.randomizeInitialState(numHum, numComp)
     riskState.playersMove = 0
     initPlayer = riskState.players[riskState.playersMove]
     riskState.setContinentControl()
