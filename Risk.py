@@ -81,7 +81,7 @@ class Risk:
     #
     ############################
     def rollDice(self, num_dice):
-        temp = [random.randint(1,6) for x in range(num_dice)]
+        temp = [random.randrange(1,6) for x in range(num_dice)]
         temp.sort()
         temp.reverse()
         return temp
@@ -441,6 +441,7 @@ class Risk:
             return
         choice = random.choice(self.GetMoves(player, self.gamePhase, player.numArmiesPlacing))
         self.DoMove(choice, player)
+        return choice
        
 
     

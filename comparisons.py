@@ -35,7 +35,7 @@ def main():
 
             t2 = time.time()    
             f = open('comparisonsresults.txt','a')
-            f.write('%-20d%-20d%-20d%-20f'%(sims,depth,riskState.playersMove,t2-t1))
+            f.write('%-20d%-20d%-20d%-20f\n'%(sims,depth,riskState.playersMove,t2-t1))
             f.close()
 if __name__ == "__main__":
     main()
