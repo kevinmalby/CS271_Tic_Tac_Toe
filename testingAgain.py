@@ -39,14 +39,15 @@ def main():
                         f1.write("Player %d: Game Phase %d %s\n"%(curPlayer.playerNum, riskState.gamePhase,move));
                         riskState.DoMove(move,curPlayer)
                     else:
+                        phase = riskState.gamePhase
                         move =  riskState.DoRandomMove(curPlayer)
-                        f1.write("Player %d: Game Phase %d %s\n"%(curPlayer.playerNum, riskState.gamePhase,move));      
+                        f1.write("Player %d: Game Phase %d %s\n"%(curPlayer.playerNum, phase,move));      
                 f1.close()
                 t2 = time.time()
                 total += t2-t1
-        f = open('comparisonsresults.txt','a')
-        f.write('%-20d%-20d%-20d%-20f\n'%(sims,depth,riskState.playersMove,total/10.0))
-        f.close()
+            f = open('comparisonsresults.txt','a')
+            f.write('%-20d%-20d%-20d%-20f\n'%(sims,depth,riskState.playersMove,total/10.0))
+            f.close()
 
 
 if __name__ == "__main__":

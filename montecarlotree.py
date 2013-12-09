@@ -52,7 +52,7 @@ class MonteCarloMethod:
 
       
         for i in range(numIterations):
-            print i
+            #print i
             curNode = rootnode
             curState = rootstate.Clone()
             #print "Root: %s\n"%(curNode)
