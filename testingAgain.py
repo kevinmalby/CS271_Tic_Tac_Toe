@@ -7,20 +7,19 @@ import time
 # Time and see how many times the computer AI beats
 # the randomly playing comp players
 def main():
-    f = open('testingAgainresults.txt','w')
+    f = open('testingAgainresults01.txt','w')
     f.write("%-20s%-20s%-20s%-20s\n"%("NumSims","Depth","Winning Player", "Length of Game"))
     f.close()
-    f1 = open('GameTrace.txt','w');
+    f1 = open('GameTrace01.txt','w');
     f1.write("\n");
     f1.close()
     for sims in range(10,1001,50):
         for depth in range(1000,100001,1000):
             total = 0
-            for cnt in range(10):
+            for cnt in range(4):
                 riskState = Risk('countries.txt','territory_cards.txt', 4)
             # riskState = Risk('test_map.txt','territory_cards.txt', 4)
                 mcts = MonteCarloMethod()
-                
                 numHum = 0
                 numComp = 4
                 riskState.randomizeInitialState(numHum, numComp)
@@ -30,7 +29,7 @@ def main():
                 numA = initPlayer.GetNewArmies(riskState)
                 initPlayer.numArmiesPlacing = numA
                 t1 = time.time()
-                f1 = open('GameTrace.txt','a')
+                f1 = open('GameTrace01.txt','a')
                 f1.write('Game Number %d %d sims %d depth\n'%(cnt,sims,depth))
                 while riskState.GameOver() == -1:
                     curPlayer = riskState.players[riskState.playersMove]
@@ -45,8 +44,8 @@ def main():
                 f1.close()
                 t2 = time.time()
                 total += t2-t1
-            f = open('comparisonsresults.txt','a')
-            f.write('%-20d%-20d%-20d%-20f\n'%(sims,depth,riskState.playersMove,total/10.0))
+            f = open('testingAgainresults01.txt','a')
+            f.write('%-20d%-20d%-20d%-20f\n'%(sims,depth,riskState.playersMove,total/4.0))
             f.close()
 
 
