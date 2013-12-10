@@ -19,8 +19,9 @@ class CompRiskPlayer(RiskPlayer):
             totalNewArmies += len(self.occupiedCountries) / 3
         else:
             totalNewArmies += 3
-        if len(self.cards) > 5:
+        if len(self.cards) > 2:
             totalNewArmies += self.UseCards(riskState)
+
 
         return totalNewArmies
 
@@ -34,7 +35,7 @@ class CompRiskPlayer(RiskPlayer):
         # try and choose ones that have countries the computer
         # 
         # collect all possible working combinations of cards
-        iterCombinations = itertools.combinations(self.cards, 3)
+        iterCombinations = list(itertools.combinations(self.cards, 3))
         allCombinations = []
         validIndeces = []
 
@@ -124,5 +125,5 @@ class CompRiskPlayer(RiskPlayer):
     ######################
     def MakeMove(self, riskstate,numSims = 25, maxDepth = 5000):
         #pdb.set_trace()
-        move = self.myTree.TreeSearch(riskstate,25,False)
+        move = self.myTree.TreeSearch(riskstate,numSims,False,maxDepth)
         return move

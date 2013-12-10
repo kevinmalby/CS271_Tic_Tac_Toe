@@ -6,6 +6,8 @@ import globalVals
 from risk_player import RiskPlayer
 from CompRiskPlayer import CompRiskPlayer
 import pdb
+from a_star import AStar
+
 
 class Risk:
 
@@ -13,6 +15,7 @@ class Risk:
         self.countries = {}  # {"North America:[[South America,],{player:number_armies}]}
         self.map = {} # {"North America":["Eastern United States", "Greenland"]}
         self.players = []
+        self.centers = {}
         self.playersMove = -1
         self.territoryCards = {} # {"North America":"Canon"}
         self.countryLocations = {}
@@ -25,6 +28,8 @@ class Risk:
             self.makeCards(card_file)
         self.makeCountryLocations()
         pygame.init()
+        self.make_centers()
+        self.percentages = [[.4176, .2546], [.5787, .2276], [.6597, .3117]]
       
     ###########################
     # Read in the countries
@@ -73,6 +78,18 @@ class Risk:
                     xyLoc = countrySymbol[1].split(' ')
                     self.countryLocations[countrySymbol[0].strip()] = (xyLoc[1].strip(), xyLoc[2].strip())
                     line = input.readline()
+
+    ########################################
+    # Read in the countries' center points #
+    ########################################
+    def make_centers(self):
+        with open('country_centers.txt', 'r') as input:
+            line = input.readline()
+            while line != "":
+                countrySymbol = line.split('-')
+                xyLoc = countrySymbol[1].split(' ')
+                self.centers[countrySymbol[0].strip()] = (xyLoc[1].strip(), xyLoc[2].strip())
+                line = input.readline()
 
 
     ####################################
@@ -166,9 +183,14 @@ class Risk:
             if num_armies == -1:
                 #flag to stop attacking
                 if player.conqueredTerritory == True:
-                    if not(self.territoryCards):
-                        new_card = self.territoryCards.popitem()
-                        player.cards[new_card[0]] = new_card[1] # get a card
+                    if len(player.cards) < 7:
+                        if self.territoryCards:
+                            new_card = []
+                            new_card.append(random.choice(self.territoryCards.keys()))
+                            symbol = self.territoryCards[new_card[0]]
+                            new_card.append(symbol)
+                            self.territoryCards.pop(new_card[0])
+                            player.cards[new_card[0]] = new_card[1] # get a card
                 player.conqueredTerritory = False
                 self.gamePhase = 3
                 return
@@ -330,6 +352,7 @@ class Risk:
             self.playersMove = (self.playersMove  + 1) % len(self.players)
             
         self.players[self.playersMove].numArmiesPlacing = self.players[self.playersMove].GetNewArmies(self)
+
     ###############################################
     # Returns a list of possible moves based on the state passed in
     # Params:  stage   What stage of the move to get moves for
@@ -380,6 +403,7 @@ class Risk:
                 for cto in self.countries[c][0]:
                     if cto in player.occupiedCountries:
                         #                        moves.extend({c:(cto,x)} for x in range(0,num_armies))
+
                         moves.extend({c:(cto,x)} for x in range(0,num_armies))
                                      
             if not(moves):
@@ -664,8 +688,9 @@ class Risk:
     ###################################################
     def HumanMoveAfterConquer(self, player):
         for c in player.occupiedCountries.items():
-            if c[1] == 0:
+            if c[1] < 0:
                 attack_country = c[0]
+                min_armies = c[1]*-1;
                 break
         for c in self.countries.items():
             if 0 in c[1][1].values():
@@ -813,20 +838,73 @@ class Risk:
     # occupied and 0 if not.             
     ###############################################
     def Score(self, curPlayerNum, gameFinished = True):
-        if gameFinished:
-            if curPlayerNum == self.playersMove:
-                return 1.0
-            else:
-                return 0.0
-        else:
-            most = (0,(self.players[0].occupiedCountries))
-            for x in range(1,len(self.players)):
-                if len(self.players[x]) > most[1]:
-                    most = (x,len(self.players[x]))
-            if curPlayerNum == most[0]:
-                return 1.0
-            else:
-                return 0.0
+        #playerBSR = 0
+        #enemyBSR = []
+        #player = self.players[curPlayerNum]
+        #enemy = self.players[(self.playersMove  + 1) % len(self.players)]
+        #
+        #for country, value in player.occupiedCountries.iteritems():
+        #    neighbors = self.countries[country][0]
+        #    sumNeighbor = 0
+        #    for neighbor in neighbors:
+        #        neighborData = self.countries[neighbor][1]
+        #        if neighborData.keys()[0] == enemy.playerNum:
+        #            sumNeighbor += neighborData.values()[0]
+        #    if sumNeighbor is not 0:
+        #        playerBSR += float(value) / float(sumNeighbor)
+        #
+        #for p in self.players:
+        #    enemyBSRTemp = 0
+        #    if p.playerNum != curPlayerNum:
+        #        for country, value in enemy.occupiedCountries.iteritems():
+        #            neighbors = self.countries[country][0]
+        #            sumNeighbor = 0
+        #            for neighbor in neighbors:
+        #                neighborData = self.countries[neighbor][1]
+        #                if neighborData.keys()[0] == player.playerNum:
+        #                    sumNeighbor += neighborData.values()[0]
+        #            if sumNeighbor != 0:
+        #                enemyBSRTemp += float(value) / float(sumNeighbor)
+        #        enemyBSR.append(enemyBSRTemp)
+        #
+        #
+        #if sum(enemyBSR) == 0:# and len(enemy.continentsHeld) is 7:
+        #    return 0.0
+        #if playerBSR == 0:# and len(player.continentsHeld) is 7:
+        #    return 1.0
+        #
+        #normBSR = float(playerBSR) / float((playerBSR + sum(enemyBSR)))
+        #
+        #pTotalArmies = 0
+        #for country, armies in player.occupiedCountries.iteritems():
+        #    pTotalArmies += armies
+        #
+        #eTotalArmies = 0
+        #enemy = self.players[(self.playersMove  + 1) % len(self.players)]
+        #for country, armies in enemy.occupiedCountries.iteritems():
+        #            eTotalArmies += armies
+        #
+        #CAR = float(pTotalArmies) / float(eTotalArmies + pTotalArmies)
+        #
+        #totalValue = 0.2*normBSR + 0.15*(len(player.continentsHeld)/7) + 0.0*CAR
+        #if gameFinished:
+        #    if curPlayerNum == self.playersMove:
+        #        return 1.0
+        #    else:
+        #        return 0.0
+        #else:
+        postCountries = 0
+        postArmies = 0
+        for c, a in self.players[curPlayerNum].occupiedCountries.iteritems():
+            postCountries += 1
+            postArmies += a
+
+        countryDifference = postCountries - self.players[curPlayerNum].startCountries
+        armyDifference = postArmies - self.players[curPlayerNum].startArmies
+
+        score = float(postArmies - (armyDifference - 3*(countryDifference))) / float(self.players[curPlayerNum].startArmies)
+
+        return score
         
     # Returns whether this game is over and sets 
     # self.playersMove to winning player number
@@ -844,22 +922,15 @@ class Risk:
         for p in self.players:
             curNum = len(p.occupiedCountries)
             if curNum == numCountries:
+                print 'full end'
                 self.playersMove = p.playerNum
                 return 1
             if  allowTie and curNum >= mostOfBoard:
+                print 'most of board'
                 self.playersMove = p.playerNum
                 return 0
 
-            # Compute if one player has 15x the armies of another
-            for countries, armies in p.occupiedCountries.iteritems():
-                playerCounts[p.playerNum] += abs(armies)
-            
 
-        maxA = max(playerCounts)
-        for i in range(0, len(self.players)):
-            if playerCounts[i] != 0:
-                if (maxA / playerCounts[i]) > 9:
-                    return 0
         return -1
     #######################################
     # Function to determine in a player   #
@@ -909,9 +980,9 @@ class Risk:
         armiesToPlaceEach = 40-((numHumanPl+numCompPl)*5)
 
         for i in range(int(numHumanPl)):
-            self.players.append(RiskPlayer(i,colors[i]))
+            self.players.append(RiskPlayer(i,globalVals.colors[i]))
         for i in range(int(numCompPl)):
-            self.players.append(CompRiskPlayer(numHumanPl+i,colors[i+numHumanPl]))
+            self.players.append(CompRiskPlayer(numHumanPl+i, globalVals.colors[i+numHumanPl]))
 
         for p in self.players:
             p.maxArmiesLeft -= armiesToPlaceEach

@@ -52,7 +52,6 @@ class MonteCarloMethod:
 
       
         for i in range(numIterations):
-            #print i
             curNode = rootnode
             curState = rootstate.Clone()
             #print "Root: %s\n"%(curNode)
@@ -81,21 +80,46 @@ class MonteCarloMethod:
             if curNode.untriedMoves != []:
                 move = random.choice(curNode.untriedMoves)
                # print "\tMove: %s"%(move)
+                if curState.gamePhase == 2 and move.values()[0][1] > 3:
+                    print 'uhh'
                 curState.DoMove(move,curState.players[curState.playersMove])
                 #print "\tNew State"%(curState)
                 curNode = curNode.AddChild(move, curState)
 
             # Rollout - Randomly play games from this point until game finishes
             cnt = 0
-            while curState.GameOver(True) == -1 and cnt < numRandMoves:
+
+            countryCount = 0
+            armyCount = 0
+            for c, a in curState.players[curState.playersMove].occupiedCountries.iteritems():
+                countryCount += 1
+                armyCount += a
+            curState.players[curState.playersMove].startCountries = countryCount
+            curState.players[curState.playersMove].startArmies = armyCount
+
+            gameFinished = True
+            while curState.GameOver(True) == -1:
+                if cnt > numRandMoves:
+                    gameFinished = False
+                    break;
                 curState.DoRandomMove(curState.players[curState.playersMove])
                 cnt += 1
 
 #            print "Final State: %s\n\n\n"%(curState)
             # Backpropogate - After the game is over, propogate the result of it (win/loss) through the expanded
             # nodes. Each node is updated with respect to which player won or lost
+            adjustedScore = curState.Score(curNode.playerJustMoved, gameFinished)
+            if curNode.parentNode.st.gamePhase == 2:
+                defendingCountry = curNode.st.countries[curNode.move.values()[0][0]]
+                if defendingCountry[1].values()[0] > 1:
+                    defendDice = 1
+                else:
+                    defendDice = 0
+                attackDice = curNode.move.values()[0][1] - 1
+                adjustedScore = adjustedScore*curState.percentages[attackDice][defendDice]
+
             while curNode != None:
-                curNode.Update(curState.Score(curNode.playerJustMoved))
+                curNode.Update(adjustedScore)
                 curNode = curNode.parentNode
         return sorted(rootnode.childNodes, key = lambda node: node.visits)[-1].move
 

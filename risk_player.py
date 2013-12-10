@@ -10,6 +10,10 @@ class RiskPlayer:
         self.conqueredTerritory = False
         self.numAttacks = 0
         self.maxArmiesLeft = 200
+        self.minCountry = ''
+        self.maxCountry = ''
+        self.startArmies = 0
+        self.startCountries = 0
 
     def GetNewArmies(self, riskState):
         totalNewArmies = 0
@@ -137,6 +141,27 @@ class RiskPlayer:
 
         # The player chose cards that cannot be combined so return false
         return False
+
+    def maxMinCluster(self, riskState):
+        min = 1000000
+        minCountry = ''
+        max = 0
+        maxCountry = ''
+        for country, armies in self.occupiedCountries.iteritems():
+            tempCount = armies
+            for adjacent in riskState.countries[country][0]:
+                c = riskState.countries[adjacent][1]
+                if self.playerNum in c:
+                    tempCount += c[c.keys()[0]]
+            if tempCount < min:
+                min = tempCount
+                minCountry = country
+            if tempCount > max:
+                max = tempCount
+                maxCountry = country
+
+        self.minCountry = minCountry
+        self.maxCountry = maxCountry
 
     def LongPrint(self):
         strRep = "Player %d: %d Countries %d Continents %d Cards\n"%(self.playerNum,len(self.occupiedCountries), len(self.continentsHeld), len(self.cards))

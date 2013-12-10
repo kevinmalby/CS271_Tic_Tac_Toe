@@ -10,11 +10,10 @@ def main():
     f = open('comparisonsresults.txt','w')
     f.write("%-20s%-20s%-20s%-20s"%("NumSims","Depth","Winning Player", "Length of Game"))
     f.close()
-    for sims in range(10,51,10):
-        for depth in range(1000,10001,1000):
-            riskState = Risk('countries.txt','territory_cards.txt', 4)
-           # riskState = Risk('test_map.txt','territory_cards.txt', 4)
-            mcts = MonteCarloMethod()
+    riskState = Risk('countries.txt','territory_cards.txt', 4)
+   # riskState = Risk('test_map.txt','territory_cards.txt', 4)
+    mcts = MonteCarloMethod()
+
             
             numHum = 0
             numComp = 4
