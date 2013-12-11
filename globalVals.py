@@ -5,3 +5,5 @@ yellow = (255, 215, 0)
 black = (0, 0, 0)
 green = (34, 139, 34)
 colors = [red, blue, yellow, black, green]
+plys = 0
+moveStartPhase = 1

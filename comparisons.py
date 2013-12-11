@@ -15,26 +15,26 @@ def main():
     mcts = MonteCarloMethod()
 
             
-            numHum = 0
-            numComp = 4
-            riskState.randomizeInitialState(numHum, numComp)
-            riskState.playersMove = 0
-            initPlayer = riskState.players[riskState.playersMove]
-            riskState.setContinentControl()
-            numA = initPlayer.GetNewArmies(riskState)
-            initPlayer.numArmiesPlacing = numA
-            t1 = time.time()
-            while riskState.GameOver() == -1:
-                curPlayer = riskState.players[riskState.playersMove]
-                if curPlayer.playerNum == 0:
-                    move = curPlayer.MakeMove(riskState,sims,depth)
-                    riskState.DoMove(move,curPlayer)
-                else:
-                    riskState.DoRandomMove(curPlayer)
+    numHum = 0
+    numComp = 4
+    riskState.randomizeInitialState(numHum, numComp)
+    riskState.playersMove = 0
+    initPlayer = riskState.players[riskState.playersMove]
+    riskState.setContinentControl()
+    numA = initPlayer.GetNewArmies(riskState)
+    initPlayer.numArmiesPlacing = numA
+    t1 = time.time()
+    while riskState.GameOver() == -1:
+        curPlayer = riskState.players[riskState.playersMove]
+        if curPlayer.playerNum == 0:
+            move = curPlayer.MakeMove(riskState,200,50)
+            riskState.DoMove(move,curPlayer)
+        else:
+            riskState.DoRandomMove(curPlayer)
 
-            t2 = time.time()    
-            f = open('comparisonsresults.txt','a')
-            f.write('%-20d%-20d%-20d%-20f\n'%(sims,depth,riskState.playersMove,t2-t1))
-            f.close()
+    t2 = time.time()
+    f = open('comparisonsresults.txt','a')
+    f.write('%-20d%-20d%-20d%-20f\n'%(200,50,riskState.playersMove,t2-t1))
+    f.close()
 if __name__ == "__main__":
     main()

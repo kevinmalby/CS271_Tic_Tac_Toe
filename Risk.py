@@ -350,8 +350,12 @@ class Risk:
         self.playersMove = (self.playersMove  + 1) % len(self.players)
         while len(self.players[self.playersMove].occupiedCountries) == 0:
             self.playersMove = (self.playersMove  + 1) % len(self.players)
-            
+        globalVals.plys += 1
+        s = globalVals.plys
+        d = globalVals.moveStartPhase
         self.players[self.playersMove].numArmiesPlacing = self.players[self.playersMove].GetNewArmies(self)
+
+
 
     ###############################################
     # Returns a list of possible moves based on the state passed in
@@ -879,14 +883,18 @@ class Risk:
         #for country, armies in player.occupiedCountries.iteritems():
         #    pTotalArmies += armies
         #
-        #eTotalArmies = 0
-        #enemy = self.players[(self.playersMove  + 1) % len(self.players)]
-        #for country, armies in enemy.occupiedCountries.iteritems():
-        #            eTotalArmies += armies
+        #eTotalArmies = []
+        #for p in self.players:
+        #    enemyArmyTemp = 0
+        #    if p.playerNum != curPlayerNum:
+        #        for c, a in p.occupiedCountries.iteritems():
+        #            enemyArmyTemp += a
+        #    eTotalArmies.append(enemyArmyTemp)
         #
-        #CAR = float(pTotalArmies) / float(eTotalArmies + pTotalArmies)
+        #CAR = float(pTotalArmies) / float(sum(eTotalArmies) + pTotalArmies)
         #
-        #totalValue = 0.2*normBSR + 0.15*(len(player.continentsHeld)/7) + 0.0*CAR
+        #totalValue = 0.45*normBSR + 0.2*(len(player.continentsHeld)/7) + 0.35*CAR
+        #return totalValue
         #if gameFinished:
         #    if curPlayerNum == self.playersMove:
         #        return 1.0
@@ -899,12 +907,19 @@ class Risk:
             postCountries += 1
             postArmies += a
 
-        countryDifference = postCountries - self.players[curPlayerNum].startCountries
+        startCountries = self.players[curPlayerNum].startCountries
+        startArmies = self.players[curPlayerNum].startArmies
+        countryDifference = postCountries - startCountries
         armyDifference = postArmies - self.players[curPlayerNum].startArmies
 
-        score = float(postArmies - (armyDifference - 3*(countryDifference))) / float(self.players[curPlayerNum].startArmies)
+        if startCountries < 10:
+            if float(postArmies)/float(startArmies) > 0.65 and postCountries - float(startCountries) > 0:
+                return 1.0
+        if float(postArmies)/float(startArmies) > 0.65 and postCountries - float(startCountries) > 1:
+            return 1.0
+        else:
+            return 0.0
 
-        return score
         
     # Returns whether this game is over and sets 
     # self.playersMove to winning player number
@@ -930,8 +945,13 @@ class Risk:
                 self.playersMove = p.playerNum
                 return 0
 
-
         return -1
+
+    def EndRandPlay(self):
+        if globalVals.plys == 9:
+            return True
+        else:
+            return False
     #######################################
     # Function to determine in a player   #
     # has control of any continents       #

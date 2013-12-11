@@ -13,8 +13,8 @@ def main():
     f1 = open('GameTrace01.txt','w');
     f1.write("\n");
     f1.close()
-    for sims in range(10,1001,50):
-        for depth in range(1000,100001,1000):
+    for sims in range(600,800,20):
+        for depth in range(40,80,5):
             total = 0
             for cnt in range(4):
                 riskState = Risk('countries.txt','territory_cards.txt', 4)
@@ -37,10 +37,12 @@ def main():
                         move = curPlayer.MakeMove(riskState,sims,depth)
                         f1.write("Player %d: Game Phase %d %s\n"%(curPlayer.playerNum, riskState.gamePhase,move));
                         riskState.DoMove(move,curPlayer)
+                        print move
                     else:
                         phase = riskState.gamePhase
                         move =  riskState.DoRandomMove(curPlayer)
-                        f1.write("Player %d: Game Phase %d %s\n"%(curPlayer.playerNum, phase,move));      
+                        f1.write("Player %d: Game Phase %d %s\n"%(curPlayer.playerNum, phase,move));
+                print 'uuuhhh'
                 f1.close()
                 t2 = time.time()
                 total += t2-t1
